@@ -1,0 +1,3902 @@
+/* ==========================================================================
+   AAVNI LUXURY CLOTHING - DESIGN SYSTEM & STYLESHEET
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Urbanist:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+:root {
+  --aavni-bg: #FAF8F5;
+  --aavni-bg-alt: #F3EFE9;
+  --aavni-card-bg: #FFFFFF;
+  --aavni-text: #1B1A18;
+  --aavni-text-muted: #6B655C;
+  --aavni-text-subtle: #968F84;
+  --aavni-gold: #C5A880;
+  --aavni-gold-hover: #AF8E60;
+  --aavni-gold-light: #F4EFE6;
+  --aavni-terracotta: #A85A48;
+  --aavni-terracotta-light: #F8EBE7;
+  --aavni-charcoal: #2A2825;
+  --aavni-border: #E8E2D8;
+  --aavni-border-light: #F0ECE4;
+  
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body: 'Urbanist', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  --shadow-sm: 0 2px 8px rgba(27, 26, 24, 0.04);
+  --shadow-md: 0 8px 24px rgba(27, 26, 24, 0.07);
+  --shadow-lg: 0 16px 40px rgba(27, 26, 24, 0.1);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Global Reset & Base */
+body {
+  background-color: var(--aavni-bg);
+  color: var(--aavni-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6, .aavni-heading {
+  font-family: var(--font-heading);
+  color: var(--aavni-text);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  margin-top: 0;
+}
+
+a {
+  color: var(--aavni-text);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--aavni-gold-hover);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Container */
+.aavni-container {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* Top Announcement Bar */
+.aavni-announcement-bar {
+  background-color: var(--aavni-charcoal);
+  color: #FFFFFF;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.aavni-announcement-bar::-webkit-scrollbar {
+  display: none;
+}
+.aavni-announcement-bar span.highlight {
+  color: var(--aavni-gold);
+  font-weight: 600;
+}
+
+/* Site Header */
+.aavni-header {
+  background-color: rgba(250, 248, 245, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--aavni-border-light);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  transition: var(--transition);
+}
+
+.aavni-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 84px;
+}
+
+/* Brand Identity */
+.aavni-logo-wrap,
+a.aavni-logo-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-decoration: none !important;
+  flex-shrink: 0 !important;
+  max-height: 56px !important;
+}
+
+.aavni-logo-img,
+img.aavni-logo-img,
+.woocommerce .aavni-logo-img,
+.woocommerce-page .aavni-logo-img,
+body.woocommerce .aavni-header .aavni-logo-img,
+body.woocommerce-page .aavni-header .aavni-logo-img,
+.ast-header-break-point .aavni-header .aavni-logo-img {
+  height: 42px !important;
+  max-height: 42px !important;
+  width: auto !important;
+  max-width: 120px !important;
+  object-fit: contain !important;
+  flex-shrink: 0 !important;
+  display: block !important;
+}
+
+.aavni-logo-text-group {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-shrink: 0 !important;
+}
+.aavni-brand-name {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--aavni-text);
+  line-height: 1;
+}
+.aavni-brand-tagline {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--aavni-text-muted);
+  margin-top: 4px;
+}
+
+/* Navigation */
+.aavni-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: nowrap;
+}
+
+.aavni-nav-menu a,
+.aavni-nav-item > a {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--aavni-text);
+  padding: 10px 0;
+  position: relative;
+  white-space: nowrap !important;
+}
+
+.aavni-nav-item > a::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  height: 1.5px;
+  background-color: var(--aavni-gold);
+  transition: width 0.3s ease;
+}
+
+.aavni-nav-item:hover > a::after,
+.aavni-nav-item.current-menu-item > a::after {
+  width: 100%;
+}
+
+/* Header Action Icons */
+.aavni-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.aavni-action-btn {
+  background: none;
+  border: none;
+  color: var(--aavni-text);
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.aavni-action-btn:hover {
+  color: var(--aavni-gold-hover);
+  background-color: var(--aavni-bg-alt);
+}
+
+.aavni-action-btn svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.6;
+}
+
+.aavni-badge-count {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  background-color: var(--aavni-terracotta);
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 600;
+  height: 18px;
+  min-width: 18px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* Mobile Nav Toggle */
+.aavni-mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+}
+
+/* Buttons */
+.aavni-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 32px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.aavni-btn-primary {
+  background-color: var(--aavni-charcoal);
+  color: #FFFFFF;
+}
+.aavni-btn-primary:hover {
+  background-color: var(--aavni-gold-hover);
+  color: #FFFFFF;
+  border-color: var(--aavni-gold-hover);
+  box-shadow: 0 4px 16px rgba(197, 168, 128, 0.35);
+}
+
+.aavni-btn-outline {
+  background-color: transparent;
+  color: var(--aavni-text);
+  border-color: var(--aavni-charcoal);
+}
+.aavni-btn-outline:hover {
+  background-color: var(--aavni-charcoal);
+  color: #FFFFFF;
+}
+
+.aavni-btn-gold {
+  background-color: var(--aavni-gold);
+  color: #FFFFFF;
+}
+.aavni-btn-gold:hover {
+  background-color: var(--aavni-gold-hover);
+  color: #FFFFFF;
+}
+
+/* Section Header */
+.aavni-section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+.aavni-subheading {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--aavni-gold-hover);
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+}
+.aavni-section-title {
+  font-size: 34px;
+  color: var(--aavni-text);
+  margin-bottom: 12px;
+}
+.aavni-section-desc {
+  max-width: 600px;
+  margin: 0 auto;
+  color: var(--aavni-text-muted);
+  font-size: 15px;
+}
+
+/* ==========================================================================
+   Full-Width Edge-to-Edge Hero Carousel Slider
+   ========================================================================== */
+body.home #content,
+body.home #content.site-content,
+body.home #primary,
+body.home .site-main,
+body.home .ast-container,
+body.home .entry-content {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  max-width: 100% !important;
+}
+
+.aavni-hero-slider-section {
+  width: 100% !important;
+  margin: 0 0 64px 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  position: relative;
+  background-color: #E8D5D0;
+}
+
+.aavni-hero-slider {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.aavni-hero-slides-wrapper {
+  display: flex;
+  width: 100%;
+  transition: transform 0.65s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+}
+
+.aavni-hero-slide {
+  min-width: 100%;
+  width: 100%;
+  flex-shrink: 0;
+  position: relative;
+  height: 520px;
+  overflow: hidden;
+}
+
+.aavni-hero-slide-bg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.aavni-hero-banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.aavni-hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(27,26,24,0.76) 0%, rgba(27,26,24,0.44) 48%, rgba(27,26,24,0.08) 100%);
+  display: flex;
+  align-items: center;
+  padding: 0 max(24px, calc((100% - 1280px) / 2 + 24px));
+  box-sizing: border-box;
+}
+
+.aavni-hero-content {
+  max-width: 580px;
+  color: #FFFFFF;
+  animation: aavniHeroFadeUp 0.8s ease-out;
+}
+
+@keyframes aavniHeroFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.aavni-hero-tagline {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--aavni-gold);
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.aavni-hero-title {
+  font-family: var(--font-heading);
+  font-size: 44px;
+  line-height: 1.15;
+  color: #FFFFFF;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.aavni-hero-desc {
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 28px;
+}
+
+.aavni-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Slider Controls: Arrows */
+.aavni-slider-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  padding: 0;
+}
+
+.aavni-slider-prev {
+  left: 28px;
+}
+
+.aavni-slider-next {
+  right: 28px;
+}
+
+.aavni-slider-btn:hover {
+  background: #FFFFFF;
+  color: var(--aavni-charcoal);
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Slider Controls: Dots */
+.aavni-slider-dots {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+.aavni-slider-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.45);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.35s ease;
+}
+
+.aavni-slider-dot:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.aavni-slider-dot.active {
+  width: 32px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+@media (max-width: 991px) {
+  .aavni-hero-slide {
+    height: 460px;
+  }
+  .aavni-hero-title {
+    font-size: 34px;
+  }
+  .aavni-slider-prev {
+    left: 14px;
+  }
+  .aavni-slider-next {
+    right: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .aavni-hero-slide {
+    height: 420px;
+  }
+  .aavni-hero-title {
+    font-size: 28px;
+  }
+  .aavni-hero-desc {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .aavni-slider-btn {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+/* Category Grid */
+.aavni-category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 72px;
+}
+
+.aavni-cat-card {
+  position: relative;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--aavni-card-bg);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  display: block;
+}
+
+.aavni-cat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+}
+
+.aavni-cat-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background-color: var(--aavni-bg-alt);
+}
+
+.aavni-cat-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.aavni-cat-card:hover .aavni-cat-img {
+  transform: scale(1.06);
+}
+
+.aavni-cat-info {
+  padding: 16px 20px;
+  background-color: #FFFFFF;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--aavni-border-light);
+}
+
+.aavni-cat-title {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  color: var(--aavni-text);
+  margin: 0;
+}
+
+.aavni-cat-action {
+  color: var(--aavni-gold);
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Product Cards */
+.aavni-product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 28px;
+  margin-bottom: 64px;
+}
+
+.aavni-product-card {
+  background-color: var(--aavni-card-bg);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: var(--transition);
+  border: 1px solid var(--aavni-border-light);
+  display: flex;
+  flex-direction: column;
+}
+
+.aavni-product-card:hover {
+  border-color: var(--aavni-border);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-4px);
+}
+
+.aavni-pcard-media {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background-color: var(--aavni-bg-alt);
+}
+
+.aavni-pcard-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.aavni-product-card:hover .aavni-pcard-img {
+  transform: scale(1.04);
+}
+
+.aavni-badge-sale {
+  position: absolute !important;
+  top: 14px !important;
+  left: 14px !important;
+  background: linear-gradient(135deg, #B85D3A 0%, #9E4A2A 100%) !important;
+  color: #FFFFFF !important;
+  font-family: inherit !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  z-index: 10 !important;
+  line-height: 1 !important;
+  box-shadow: 0 3px 10px rgba(184, 93, 58, 0.35) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: none !important;
+}
+
+.aavni-wishlist-toggle,
+button.aavni-wishlist-toggle {
+  position: absolute !important;
+  top: 14px !important;
+  right: 14px !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  min-height: 38px !important;
+  max-width: 38px !important;
+  max-height: 38px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  color: #2D2424 !important;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease, box-shadow 0.25s ease !important;
+  z-index: 10 !important;
+  outline: none !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+}
+
+.aavni-wishlist-toggle:hover,
+button.aavni-wishlist-toggle:hover {
+  background: #FFFFFF !important;
+  transform: scale(1.1) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.18) !important;
+  color: var(--aavni-terracotta, #B85D3A) !important;
+}
+
+.aavni-wishlist-toggle svg,
+button.aavni-wishlist-toggle svg {
+  width: 18px !important;
+  height: 18px !important;
+  stroke: #2D2424 !important;
+  fill: none !important;
+  stroke-width: 2 !important;
+  display: block !important;
+  margin: 0 auto !important;
+  pointer-events: none !important;
+  transition: stroke 0.2s ease, fill 0.2s ease, transform 0.2s ease !important;
+}
+
+.aavni-wishlist-toggle:hover svg,
+button.aavni-wishlist-toggle:hover svg {
+  stroke: var(--aavni-terracotta, #B85D3A) !important;
+}
+
+.aavni-wishlist-toggle.active,
+button.aavni-wishlist-toggle.active {
+  background: #FFFFFF !important;
+}
+
+.aavni-wishlist-toggle.active svg,
+button.aavni-wishlist-toggle.active svg {
+  stroke: var(--aavni-terracotta, #B85D3A) !important;
+  fill: var(--aavni-terracotta, #B85D3A) !important;
+}
+
+.aavni-pcard-content {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.aavni-pcard-category {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aavni-text-subtle);
+  margin-bottom: 6px;
+}
+
+.aavni-pcard-title {
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--aavni-text);
+  margin: 0 0 10px 0;
+  line-height: 1.35;
+}
+
+.aavni-pcard-price {
+  margin-top: auto;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--aavni-text);
+}
+
+.aavni-price-regular {
+  color: var(--aavni-text-subtle);
+  text-decoration: line-through;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.aavni-pcard-btn,
+.aavni-product-card .aavni-btn-primary,
+.aavni-product-card .add_to_cart_button,
+.woocommerce ul.products li.product .button {
+  background: var(--aavni-charcoal, #1B1A18) !important;
+  color: #FFFFFF !important;
+  border-radius: var(--radius-sm, 4px) !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  border: none !important;
+  transition: all 0.25s ease !important;
+  margin-top: 14px;
+  width: 100%;
+  padding: 10px 0;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.aavni-pcard-btn:hover,
+.aavni-product-card .aavni-btn-primary:hover,
+.aavni-product-card .add_to_cart_button:hover,
+.woocommerce ul.products li.product .button:hover {
+  background: var(--aavni-terracotta, #B85D3A) !important;
+  color: #FFFFFF !important;
+  transform: translateY(-1px);
+}
+
+/* Brand Story Editorial Section */
+.aavni-brand-story {
+  background-color: var(--aavni-card-bg);
+  border: 1px solid var(--aavni-border-light);
+  border-radius: var(--radius-sm);
+  padding: 64px;
+  margin-bottom: 72px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.aavni-story-content {
+  padding-right: 20px;
+}
+
+.aavni-story-quote {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  line-height: 1.4;
+  color: var(--aavni-text);
+  font-style: italic;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--aavni-gold);
+  padding-left: 20px;
+}
+
+.aavni-story-text {
+  color: var(--aavni-text-muted);
+  font-size: 15.5px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.aavni-story-badges {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.aavni-story-badge-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--aavni-charcoal);
+}
+.aavni-story-badge-item svg {
+  color: var(--aavni-gold);
+}
+
+/* Brand Benefits / Trust Strip */
+.aavni-benefits-strip {
+  background-color: #FFFFFF;
+  border: 1px solid var(--aavni-border-light);
+  border-radius: var(--radius-sm);
+  padding: 40px 24px;
+  margin-bottom: 72px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+.aavni-benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.aavni-benefit-icon {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  background-color: var(--aavni-gold-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--aavni-gold-hover);
+}
+
+.aavni-benefit-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--aavni-text);
+  margin-bottom: 4px;
+}
+
+.aavni-benefit-desc {
+  font-size: 13px;
+  color: var(--aavni-text-muted);
+  line-height: 1.4;
+}
+
+/* Newsletter Section */
+.aavni-newsletter-section {
+  background-color: var(--aavni-charcoal);
+  color: #FFFFFF;
+  border-radius: var(--radius-sm);
+  padding: 60px 40px;
+  text-align: center;
+  margin-bottom: 72px;
+}
+
+.aavni-newsletter-title {
+  color: #FFFFFF;
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.aavni-newsletter-desc {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 15px;
+  max-width: 520px;
+  margin: 0 auto 28px auto;
+}
+
+.aavni-newsletter-form {
+  display: flex;
+  max-width: 480px;
+  margin: 0 auto;
+  gap: 12px;
+}
+
+.aavni-newsletter-input {
+  flex-grow: 1;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background-color: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  color: #FFFFFF;
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.aavni-newsletter-input:focus {
+  outline: none;
+  border-color: var(--aavni-gold);
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Footer */
+.aavni-footer {
+  background-color: #FFFFFF;
+  border-top: 1px solid var(--aavni-border);
+  padding-top: 64px;
+  margin-top: 60px;
+}
+
+.aavni-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1.2fr 1.5fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+
+.aavni-footer-title {
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aavni-text);
+  margin-bottom: 20px;
+}
+
+.aavni-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.aavni-footer-links a {
+  font-size: 14px;
+  color: var(--aavni-text-muted);
+}
+.aavni-footer-links a:hover {
+  color: var(--aavni-gold-hover);
+  padding-left: 4px;
+}
+
+.aavni-footer-bottom {
+  border-top: 1px solid var(--aavni-border-light);
+  padding: 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--aavni-text-subtle);
+}
+
+/* WooCommerce Overrides */
+.woocommerce ul.products li.product, 
+.woocommerce-page ul.products li.product {
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border-light);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+  transition: var(--transition);
+}
+
+.woocommerce ul.products li.product:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--aavni-border);
+}
+
+.woocommerce .star-rating {
+  color: var(--aavni-gold);
+}
+
+.woocommerce span.onsale {
+  background-color: var(--aavni-terracotta) !important;
+  color: #FFFFFF !important;
+  border-radius: 2px !important;
+  padding: 4px 10px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+}
+
+.woocommerce a.button, 
+.woocommerce button.button, 
+.woocommerce input.button, 
+.woocommerce #respond input#submit {
+  background-color: var(--aavni-charcoal) !important;
+  color: #FFFFFF !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 12px 28px !important;
+  transition: var(--transition) !important;
+}
+
+.woocommerce a.button:hover, 
+.woocommerce button.button:hover, 
+.woocommerce input.button:hover {
+  background-color: var(--aavni-gold-hover) !important;
+}
+
+/* Drawer & Modal Styling */
+.aavni-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(27, 26, 24, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.aavni-modal-overlay.open {
+  display: flex;
+}
+
+.aavni-modal-container {
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  max-width: 650px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 32px;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.aavni-modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: var(--aavni-text-subtle);
+}
+
+.aavni-size-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.aavni-size-table th, .aavni-size-table td {
+  padding: 12px;
+  border: 1px solid var(--aavni-border);
+  text-align: center;
+}
+
+.aavni-size-table th {
+  background-color: var(--aavni-bg);
+  font-weight: 600;
+  color: var(--aavni-text);
+}
+
+/* Slide-in Cart Drawer */
+.aavni-cart-drawer {
+  position: fixed;
+  top: 0;
+  right: -420px;
+  width: 400px;
+  max-width: 90vw;
+  height: 100%;
+  background-color: #FFFFFF;
+  box-shadow: var(--shadow-lg);
+  z-index: 10000;
+  transition: right 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.aavni-cart-drawer.open {
+  right: 0;
+}
+
+.aavni-cart-drawer-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--aavni-border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.aavni-cart-drawer-body {
+  padding: 24px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.aavni-cart-drawer-footer {
+  padding: 24px;
+  border-top: 1px solid var(--aavni-border-light);
+  background-color: var(--aavni-bg);
+}
+
+/* Responsive Media Queries */
+/* ==========================================================================
+   RICH MOBILE NAVIGATION DRAWER & BOTTOM NAV
+   ========================================================================== */
+.aavni-mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: -320px;
+  width: 300px;
+  max-width: 85vw;
+  height: 100%;
+  background-color: #FFFFFF;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  z-index: 10001;
+  transition: left 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.aavni-mobile-drawer.open {
+  left: 0 !important;
+}
+
+.aavni-mobile-drawer-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--aavni-border-light);
+  background: var(--aavni-bg);
+}
+
+.aavni-mobile-drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.aavni-mobile-drawer-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+
+.aavni-mobile-drawer-title {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--aavni-text);
+}
+
+.aavni-mobile-drawer-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--aavni-text-subtle);
+  cursor: pointer;
+  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aavni-mobile-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: #FAF8F5;
+  border-bottom: 1px solid var(--aavni-border-light);
+}
+
+.aavni-mobile-user-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--aavni-terracotta);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.aavni-mobile-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.aavni-mobile-greeting {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--aavni-text-subtle);
+  font-weight: 600;
+}
+
+.aavni-mobile-account-link {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--aavni-text);
+  text-decoration: none;
+  margin-top: 2px;
+}
+
+.aavni-mobile-account-link:hover {
+  color: var(--aavni-terracotta);
+}
+
+.aavni-mobile-drawer-body {
+  padding: 18px 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.aavni-mobile-nav-group-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--aavni-text-subtle);
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.aavni-mobile-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aavni-mobile-nav-list li a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--aavni-text);
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.aavni-mobile-nav-list li a:hover,
+.aavni-mobile-nav-list li a:active {
+  background: var(--aavni-bg);
+  color: var(--aavni-terracotta);
+}
+
+.aavni-mobile-nav-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: var(--aavni-text);
+  color: #FFFFFF;
+}
+
+.aavni-mobile-nav-badge.bestseller {
+  background: var(--aavni-terracotta);
+}
+
+.aavni-mobile-nav-list.secondary li a {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: none;
+  color: var(--aavni-text-subtle);
+  padding: 8px 12px;
+}
+
+.aavni-mobile-nav-list.secondary li a:hover {
+  color: var(--aavni-text);
+}
+
+.aavni-mobile-drawer-footer {
+  padding: 14px 20px;
+  background: var(--aavni-bg);
+  border-top: 1px solid var(--aavni-border-light);
+}
+
+.aavni-mobile-shipping-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--aavni-text-muted);
+  font-weight: 500;
+}
+
+/* Mobile Bottom Navigation Bar */
+.aavni-mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--aavni-border-light);
+  box-shadow: 0 -3px 14px rgba(0, 0, 0, 0.06);
+  z-index: 9999;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  box-sizing: border-box;
+}
+
+.aavni-bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 0;
+  text-decoration: none;
+  color: var(--aavni-text-subtle);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.2s ease, transform 0.2s ease;
+  min-height: 48px;
+  touch-action: manipulation;
+}
+
+.aavni-bottom-nav-item svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  transition: transform 0.2s ease;
+}
+
+.aavni-bottom-nav-item span {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.aavni-bottom-nav-item:hover,
+.aavni-bottom-nav-item.active {
+  color: var(--aavni-terracotta);
+}
+
+.aavni-bottom-nav-item:active {
+  transform: scale(0.94);
+}
+
+.aavni-bottom-nav-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aavni-bottom-nav-icon-wrap .aavni-badge-count {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  font-size: 9px;
+  height: 15px;
+  min-width: 15px;
+  padding: 0 3px;
+  background-color: var(--aavni-terracotta);
+  color: #FFFFFF;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   RESPONSIVE BREAKPOINTS (TABLET & MOBILE)
+   ========================================================================== */
+@media (max-width: 1080px) {
+  .aavni-nav-menu {
+    display: none !important;
+  }
+  .aavni-mobile-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 6px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+  .aavni-mobile-toggle:hover {
+    background-color: var(--aavni-bg-alt);
+  }
+}
+
+@media (max-width: 1024px) {
+  .aavni-category-grid,
+  .aavni-product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+  .aavni-benefits-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .aavni-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+  .aavni-brand-story {
+    grid-template-columns: 1fr;
+    padding: 32px;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Global body adjustment for bottom navigation bar */
+  body {
+    padding-bottom: 64px !important;
+  }
+
+  .aavni-mobile-bottom-nav {
+    display: flex !important;
+  }
+
+  /* Header adjustments */
+  .aavni-header-inner {
+    height: 64px;
+  }
+  .aavni-logo-wrap {
+    gap: 10px;
+    margin-right: 12px;
+  }
+  .aavni-logo-img {
+    height: 34px !important;
+  }
+  .aavni-brand-name {
+    font-size: 20px !important;
+  }
+  .aavni-brand-tagline {
+    font-size: 8px !important;
+    letter-spacing: 0.12em !important;
+  }
+  .aavni-header-actions {
+    gap: 8px !important;
+  }
+  .aavni-action-btn {
+    padding: 5px !important;
+  }
+  .aavni-action-btn svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* Announcement bar */
+  .aavni-announcement-bar {
+    font-size: 11px;
+    padding: 6px 12px;
+    white-space: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+  }
+
+  /* Hero Banner Slider */
+  .aavni-hero-slide {
+    height: 390px !important;
+  }
+  .aavni-hero-title {
+    font-size: clamp(21px, 5.5vw, 26px) !important;
+    line-height: 1.25 !important;
+    margin-bottom: 8px !important;
+  }
+  .aavni-hero-tagline {
+    font-size: 10.5px !important;
+    letter-spacing: 0.1em !important;
+    margin-bottom: 6px !important;
+  }
+  .aavni-hero-desc {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    margin-bottom: 14px !important;
+  }
+  .aavni-hero-ctas {
+    display: flex !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+  .aavni-hero-ctas .aavni-btn {
+    padding: 9px 14px !important;
+    font-size: 11.5px !important;
+  }
+  .aavni-slider-btn {
+    width: 32px !important;
+    height: 32px !important;
+    opacity: 0.75;
+  }
+  .aavni-slider-prev {
+    left: 8px !important;
+  }
+  .aavni-slider-next {
+    right: 8px !important;
+  }
+  .aavni-slider-dots {
+    bottom: 12px !important;
+  }
+
+  /* Section headers */
+  .aavni-section-title {
+    font-size: 24px !important;
+  }
+  .aavni-section-subtitle {
+    font-size: 13px !important;
+    margin-bottom: 24px !important;
+  }
+
+  /* Curated Categories 2-Column Grid */
+  .aavni-category-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 44px !important;
+  }
+  .aavni-cat-info {
+    padding: 10px 12px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+  }
+  .aavni-cat-name {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+  }
+  .aavni-cat-count {
+    font-size: 10.5px !important;
+  }
+  .aavni-cat-arrow {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: var(--aavni-terracotta) !important;
+    margin-top: 2px !important;
+  }
+
+  /* New Arrivals 2-Column Grid */
+  .aavni-product-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 44px !important;
+  }
+  .aavni-badge-sale {
+    top: 8px !important;
+    left: 8px !important;
+    font-size: 9.5px !important;
+    padding: 3px 8px !important;
+  }
+  .aavni-wishlist-toggle,
+  button.aavni-wishlist-toggle {
+    top: 8px !important;
+    right: 8px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+  }
+  .aavni-wishlist-toggle svg,
+  button.aavni-wishlist-toggle svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+  .aavni-pcard-content {
+    padding: 10px !important;
+  }
+  .aavni-pcard-category {
+    font-size: 9.5px !important;
+    margin-bottom: 3px !important;
+  }
+  .aavni-pcard-title {
+    font-size: 12.5px !important;
+    line-height: 1.3 !important;
+    height: 32px !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    margin-bottom: 6px !important;
+  }
+  .aavni-pcard-price {
+    font-size: 13.5px !important;
+  }
+  .aavni-pcard-btn {
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  /* Brand Story */
+  .aavni-brand-story {
+    grid-template-columns: 1fr !important;
+    padding: 24px 18px !important;
+    gap: 18px !important;
+  }
+  .aavni-story-heading {
+    font-size: 22px !important;
+  }
+  .aavni-story-desc {
+    font-size: 13.5px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* Benefits Strip */
+  .aavni-benefits-strip {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    padding: 18px 14px !important;
+  }
+  .aavni-benefit-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .aavni-benefit-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  .aavni-benefit-title {
+    font-size: 12px !important;
+    margin-bottom: 2px !important;
+  }
+  .aavni-benefit-desc {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Newsletter */
+  .aavni-newsletter-section {
+    padding: 32px 18px !important;
+  }
+  .aavni-newsletter-title {
+    font-size: 22px !important;
+  }
+  .aavni-newsletter-desc {
+    font-size: 13px !important;
+    margin-bottom: 20px !important;
+  }
+  .aavni-newsletter-form {
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+  .aavni-newsletter-input {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 12px 14px !important;
+  }
+  .aavni-newsletter-form .aavni-btn {
+    width: 100% !important;
+    padding: 12px !important;
+    text-align: center !important;
+  }
+
+  /* Footer */
+  .aavni-footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 28px !important;
+    padding: 36px 0 20px 0 !important;
+  }
+  #aavniFooterNewsletter {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  #aavniFooterNewsletter button {
+    width: 100% !important;
+    padding: 11px !important;
+  }
+  .aavni-footer-bottom {
+    flex-direction: column !important;
+    gap: 10px !important;
+    text-align: center !important;
+  }
+
+  /* Cart Drawer on Mobile */
+  .aavni-cart-drawer {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  /* Search Modal on Mobile */
+  .aavni-search-modal-container {
+    padding: 20px 16px !important;
+    max-width: 95vw !important;
+  }
+  .aavni-search-form {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .aavni-search-form button {
+    width: 100% !important;
+    padding: 12px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Small Mobile Specific (Phones < 576px) */
+  .aavni-brand-tagline {
+    display: none !important; /* Hide tagline to give brand logo and buttons breathing room */
+  }
+  .aavni-header-actions .aavni-account-btn {
+    display: none !important; /* Account accessible in bottom nav & mobile drawer */
+  }
+  .aavni-header-actions {
+    gap: 6px !important;
+  }
+  .aavni-hero-slide {
+    height: 350px !important;
+  }
+  .aavni-hero-title {
+    font-size: 20px !important;
+  }
+  .aavni-slider-btn {
+    display: none !important; /* Swipe gesture takes over on small phones */
+  }
+  .aavni-category-grid,
+  .aavni-product-grid {
+    gap: 8px !important;
+  }
+  .aavni-pcard-content {
+    padding: 8px 6px 10px 6px !important;
+  }
+  .aavni-pcard-title {
+    font-size: 11.5px !important;
+    height: 30px !important;
+  }
+  .aavni-pcard-price {
+    font-size: 13px !important;
+  }
+  .aavni-pcard-btn {
+    padding: 7px 6px !important;
+    font-size: 10.5px !important;
+  }
+  .aavni-benefits-strip {
+    gap: 8px !important;
+    padding: 12px 10px !important;
+  }
+}
+
+/* ==========================================================================
+   WOOCOMMERCE LUXURY CATALOG & PRODUCT STYLES
+   ========================================================================== */
+.woocommerce ul.products {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 24px !important;
+  margin: 28px 0 !important;
+  padding: 0 !important;
+  list-style: none !important;
+}
+
+@media (max-width: 1100px) {
+  .woocommerce ul.products {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .woocommerce ul.products {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 14px !important;
+  }
+}
+
+.woocommerce ul.products li.product {
+  background: #FFFFFF !important;
+  border: 1px solid var(--aavni-border-light) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 12px !important;
+  margin: 0 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  position: relative !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.woocommerce ul.products li.product:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--aavni-border) !important;
+}
+
+/* Hide WooCommerce & Astra default round sale badges */
+.onsale,
+span.onsale,
+.woocommerce span.onsale,
+.woocommerce-loop-product__link .onsale,
+.ast-onsale-card,
+li.product .onsale,
+.woocommerce ul.products li.product span.onsale,
+.woocommerce div.product span.onsale {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+
+.woocommerce ul.products li.product a.woocommerce-LoopProduct-link {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-grow: 1 !important;
+  text-decoration: none !important;
+  color: var(--aavni-text) !important;
+}
+
+.woocommerce ul.products li.product a img {
+  width: 100% !important;
+  aspect-ratio: 3/4 !important;
+  object-fit: cover !important;
+  border-radius: var(--radius-sm) !important;
+  margin-bottom: 12px !important;
+  transition: transform 0.4s ease !important;
+}
+
+.woocommerce ul.products li.product:hover a img {
+  transform: scale(1.03) !important;
+}
+
+.woocommerce ul.products li.product .woocommerce-loop-product__title {
+  font-family: var(--font-heading) !important;
+  font-size: 15.5px !important;
+  font-weight: 500 !important;
+  line-height: 1.35 !important;
+  color: var(--aavni-text) !important;
+  margin: 4px 0 8px 0 !important;
+  min-height: 42px !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.woocommerce ul.products li.product .price {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--aavni-terracotta) !important;
+  margin: 4px 0 0 0 !important;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 8px !important;
+}
+
+.woocommerce ul.products li.product .price del {
+  color: var(--aavni-text-subtle) !important;
+  font-size: 13.5px !important;
+  font-weight: 400 !important;
+}
+
+.woocommerce ul.products li.product .price ins {
+  text-decoration: none !important;
+  color: var(--aavni-terracotta) !important;
+}
+
+.woocommerce ul.products li.product .button {
+  background: var(--aavni-text) !important;
+  color: #FFFFFF !important;
+  font-family: var(--font-body) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 10px 14px !important;
+  border-radius: var(--radius-sm) !important;
+  text-align: center !important;
+  margin-top: 10px !important;
+  border: none !important;
+  transition: var(--transition) !important;
+}
+
+.woocommerce ul.products li.product .button:hover {
+  background: var(--aavni-gold) !important;
+  color: #FFFFFF !important;
+}
+
+/* Single Product Layout */
+.woocommerce div.product {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 48px !important;
+  margin-bottom: 60px !important;
+}
+
+@media (max-width: 900px) {
+  .woocommerce div.product {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+}
+
+.woocommerce div.product div.images {
+  margin: 0 !important;
+  width: 100% !important;
+  float: none !important;
+}
+
+.woocommerce div.product div.summary {
+  margin: 0 !important;
+  width: 100% !important;
+  float: none !important;
+}
+
+.woocommerce div.product form.cart {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 20px 0 !important;
+}
+
+.woocommerce div.product form.cart .button {
+  background: var(--aavni-text) !important;
+  color: #FFFFFF !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  padding: 13px 28px !important;
+  border-radius: var(--radius-sm) !important;
+  border: none !important;
+  cursor: pointer !important;
+  transition: var(--transition) !important;
+}
+
+.woocommerce div.product form.cart .button:hover {
+  background: var(--aavni-charcoal) !important;
+}
+
+.woocommerce table.variations {
+  width: 100% !important;
+  margin-bottom: 16px !important;
+}
+
+.woocommerce table.variations td.label {
+  width: 80px !important;
+  padding: 8px 0 !important;
+  font-weight: 600 !important;
+  color: var(--aavni-text) !important;
+  font-size: 14px !important;
+  vertical-align: top !important;
+}
+
+.woocommerce table.variations td.value {
+  padding: 8px 0 !important;
+}
+
+/* ==========================================================================
+   GOOGLE AUTHENTICATION & MY-ACCOUNT LUXURY STYLES
+   ========================================================================== */
+.aavni-google-auth-wrapper {
+  margin-bottom: 24px;
+}
+
+.aavni-btn-google-auth {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 12px !important;
+  width: 100% !important;
+  background-color: #FFFFFF !important;
+  color: #3C4043 !important;
+  border: 1px solid #747775 !important;
+  border-radius: 24px !important;
+  padding: 11px 20px !important;
+  font-family: var(--font-body) !important;
+  font-size: 14.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(60,64,67,0.1) !important;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+}
+
+.aavni-btn-google-auth:hover {
+  background-color: #F8FAFD !important;
+  border-color: #4285F4 !important;
+  box-shadow: 0 2px 8px rgba(66,133,244,0.18) !important;
+  color: #1F1F1F !important;
+}
+
+.aavni-btn-google-compact {
+  width: auto !important;
+  padding: 8px 18px !important;
+  font-size: 13.5px !important;
+  border-radius: 20px !important;
+}
+
+.aavni-auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: var(--aavni-text-subtle);
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.aavni-auth-divider::before,
+.aavni-auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--aavni-border-light);
+}
+
+.aavni-auth-divider span {
+  padding: 0 14px;
+}
+
+/* Checkout Google Banner */
+.aavni-checkout-google-banner {
+  background: #FAF8F5;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+}
+
+/* Google Account Modal Chooser */
+.aavni-google-modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(32, 33, 36, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+}
+
+.aavni-google-modal-overlay.open {
+  display: flex;
+}
+
+.aavni-google-modal-dialog {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.24);
+  width: 440px;
+  max-width: 90vw;
+  overflow: hidden;
+  animation: aavniModalFade 0.25s cubic-bezier(0.2, 0, 0, 1);
+  box-sizing: border-box;
+}
+
+@keyframes aavniModalFade {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.aavni-google-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #E8EAED;
+}
+
+.aavni-google-modal-close {
+  background: none;
+  border: none;
+  font-size: 26px;
+  line-height: 1;
+  color: #5F6368;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.aavni-google-modal-close:hover {
+  color: #202124;
+}
+
+.aavni-google-modal-body {
+  padding: 24px;
+}
+
+.aavni-google-account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aavni-google-account-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #DADCE0;
+  border-radius: 8px;
+  background: #FFFFFF;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.aavni-google-account-row:hover {
+  background-color: #F8FAFD;
+  border-color: #4285F4;
+}
+
+.aavni-google-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.aavni-google-acc-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.aavni-google-acc-name {
+  font-size: 14px;
+  color: #202124;
+}
+
+.aavni-google-acc-email {
+  font-size: 12.5px;
+  color: #5F6368;
+}
+
+.aavni-google-modal-footer {
+  background: #F8F9FA;
+  padding: 14px 24px;
+  border-top: 1px solid #E8EAED;
+  line-height: 1.4;
+}
+
+/* Spinner */
+.aavni-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #E8EAED;
+  border-top-color: #1A73E8;
+  border-radius: 50%;
+  animation: aavniSpin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+@keyframes aavniSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* WooCommerce My-Account Customer Login Grid */
+.woocommerce-account .u-columns.col2-set,
+.woocommerce-account #customer_login {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 36px !important;
+  max-width: 960px !important;
+  margin: 20px auto !important;
+}
+
+@media (max-width: 800px) {
+  .woocommerce-account .u-columns.col2-set,
+  .woocommerce-account #customer_login {
+    flex-direction: column !important;
+    gap: 24px !important;
+  }
+}
+
+.woocommerce-account .u-column1.col-1,
+.woocommerce-account .u-column2.col-2 {
+  flex: 1 1 420px !important;
+  max-width: 460px !important;
+  float: none !important;
+  background: #FFFFFF !important;
+  border: 1px solid var(--aavni-border-light) !important;
+  border-radius: var(--radius-md) !important;
+  padding: 32px !important;
+  box-shadow: var(--shadow-sm) !important;
+  box-sizing: border-box !important;
+}
+
+/* If only single column, center it */
+.woocommerce-account .u-column1:only-child,
+.woocommerce-account form.login:only-child {
+  max-width: 440px !important;
+  margin: 0 auto !important;
+}
+
+
+.woocommerce-account h2 {
+  font-family: var(--font-heading) !important;
+  font-size: 24px !important;
+  color: var(--aavni-text) !important;
+  margin-bottom: 20px !important;
+  border-bottom: 1px solid var(--aavni-border-light) !important;
+  padding-bottom: 12px !important;
+}
+
+.woocommerce-account form.login,
+.woocommerce-account form.register {
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.woocommerce-account .form-row {
+  margin-bottom: 16px !important;
+}
+
+.woocommerce-account .form-row label {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
+  color: var(--aavni-text) !important;
+  margin-bottom: 6px !important;
+  display: block !important;
+}
+
+.woocommerce-account input.input-text {
+  width: 100% !important;
+  padding: 11px 14px !important;
+  border: 1px solid var(--aavni-border) !important;
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--font-body) !important;
+  font-size: 14px !important;
+  box-sizing: border-box !important;
+  background: #FFFFFF !important;
+}
+
+.woocommerce-account input.input-text:focus {
+  outline: none !important;
+  border-color: var(--aavni-gold) !important;
+  box-shadow: 0 0 0 3px rgba(197, 168, 128, 0.15) !important;
+}
+
+.woocommerce-account button.woocommerce-button {
+  background: var(--aavni-text) !important;
+  color: #FFFFFF !important;
+  font-family: var(--font-body) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 12px 24px !important;
+  border-radius: var(--radius-sm) !important;
+  border: none !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  transition: var(--transition) !important;
+  margin-top: 10px !important;
+}
+
+/* Standard WooCommerce Button hover */
+.woocommerce-account button.woocommerce-button:hover {
+  background: var(--aavni-charcoal) !important;
+}
+
+/* ==========================================================================
+   AAVNI Live Instant Search & Modal Enhancements
+   ========================================================================== */
+
+@keyframes aavniSpin {
+  0% { transform: translateY(-50%) rotate(0deg); }
+  100% { transform: translateY(-50%) rotate(360deg); }
+}
+
+.aavni-search-modal-container {
+  padding: 32px 28px !important;
+  border-radius: 8px !important;
+}
+
+#aavniSearchInput:focus {
+  border-color: var(--aavni-accent) !important;
+  box-shadow: 0 0 0 3px rgba(168, 90, 72, 0.12) !important;
+}
+
+.aavni-search-tag {
+  background: var(--aavni-bg);
+  border: 1px solid var(--aavni-border-light);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--aavni-text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.aavni-search-tag:hover {
+  background: var(--aavni-accent);
+  color: #FFFFFF;
+  border-color: var(--aavni-accent);
+  transform: translateY(-1px);
+}
+
+.aavni-live-search-container {
+  border-top: 1px solid var(--aavni-border-light);
+  padding-top: 14px;
+}
+
+.aavni-live-cat-box {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--aavni-border-light);
+}
+
+.aavni-live-cat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #FAF8F5;
+  border: 1px solid var(--aavni-border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--aavni-text);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.aavni-live-cat-link:hover {
+  background: var(--aavni-text);
+  color: #FFFFFF;
+  border-color: var(--aavni-text);
+}
+
+.aavni-live-product-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aavni-live-product-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--aavni-text);
+  transition: var(--transition);
+  border: 1px solid transparent;
+}
+
+.aavni-live-product-item:hover {
+  background: #FAF8F5;
+  border-color: var(--aavni-border-light);
+  transform: translateX(4px);
+}
+
+.aavni-live-product-img {
+  width: 48px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  background: #f0f0f0;
+}
+
+.aavni-live-product-info {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.aavni-live-product-cat {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--aavni-accent);
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.aavni-live-product-title {
+  font-size: 13.5px;
+  font-weight: 500;
+  margin: 0 0 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--aavni-text);
+}
+
+.aavni-live-product-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--aavni-text);
+}
+
+.aavni-live-product-price del {
+  color: var(--aavni-text-subtle);
+  font-size: 11.5px;
+  margin-left: 4px;
+  font-weight: 400;
+}
+
+.aavni-live-product-price ins {
+  text-decoration: none;
+  color: var(--aavni-accent);
+}
+
+.aavni-live-view-all {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  margin-top: 10px;
+  background: var(--aavni-bg);
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--aavni-accent);
+  text-decoration: none;
+  border: 1px solid var(--aavni-border-light);
+  transition: var(--transition);
+}
+
+.aavni-live-view-all:hover {
+  background: var(--aavni-accent);
+  color: #FFFFFF;
+}
+
+.aavni-live-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--aavni-text-muted);
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   FLOATING WHATSAPP BUTTON (Direct to 9828103222)
+   ========================================================================== */
+.aavni-whatsapp-float {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.42), 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.aavni-whatsapp-float:hover {
+  transform: scale(1.1) translateY(-3px);
+  box-shadow: 0 12px 30px rgba(37, 211, 102, 0.58), 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.aavni-whatsapp-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.aavni-whatsapp-float:hover .aavni-whatsapp-icon-wrap {
+  transform: scale(1.05);
+}
+
+.aavni-whatsapp-pulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: rgba(37, 211, 102, 0.5);
+  animation: aavniWhatsappPulse 2.2s infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes aavniWhatsappPulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.42);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.42);
+    opacity: 0;
+  }
+}
+
+.aavni-whatsapp-tooltip {
+  position: absolute;
+  right: 72px;
+  background: #111827;
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  font-family: inherit;
+  letter-spacing: 0.02em;
+}
+
+.aavni-whatsapp-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -5px;
+  transform: translateY(-50%);
+  border-width: 5px 0 5px 5px;
+  border-style: solid;
+  border-color: transparent transparent transparent #111827;
+}
+
+.aavni-whatsapp-float:hover .aavni-whatsapp-tooltip {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* On mobile screens, elevate above bottom navigation bar */
+@media (max-width: 768px) {
+  .aavni-whatsapp-float {
+    bottom: 76px !important;
+    right: 16px !important;
+    width: 52px;
+    height: 52px;
+  }
+  .aavni-whatsapp-float svg {
+    width: 28px;
+    height: 28px;
+  }
+  .aavni-whatsapp-tooltip {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   CATEGORY HERO VISUAL BANNERS (Long Kurti, Short Kurti, Tops, Nighty)
+   ========================================================================== */
+.aavni-category-banner-wrap {
+  margin-bottom: 28px;
+}
+
+.aavni-category-banner-img-box {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #F5EFE6;
+}
+
+.aavni-category-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.aavni-category-banner-wrap:hover .aavni-category-banner-img {
+  transform: scale(1.015);
+}
+
+.aavni-category-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 22px;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--aavni-border-light);
+}
+
+.aavni-cat-nav-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aavni-cat-nav-title-group .aavni-cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--aavni-terracotta);
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border);
+  padding: 4px 12px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.aavni-category-page-title {
+  font-family: var(--font-heading, 'Cinzel', serif);
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--aavni-text);
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.aavni-category-nav-bar .aavni-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.aavni-category-nav-bar .aavni-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 24px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--aavni-text);
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border);
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.aavni-category-nav-bar .aavni-chip:hover,
+.aavni-category-nav-bar .aavni-chip.active {
+  background: var(--aavni-text);
+  color: #FFFFFF;
+  border-color: var(--aavni-text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* Category Trust Strip */
+.aavni-category-trust-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  padding: 18px 24px;
+  background: #FAF8F5;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 768px) {
+  .aavni-category-banner-img-box {
+    border-radius: 12px;
+  }
+  .aavni-category-nav-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-top: 16px;
+    padding-bottom: 14px;
+  }
+  .aavni-category-page-title {
+    font-size: 24px;
+  }
+  .aavni-category-nav-bar .aavni-chip {
+    padding: 5px 12px;
+    font-size: 11.5px;
+  }
+  .aavni-category-trust-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+}
+
+/* ==========================================================================
+   AAVNI INDIAN E-COMMERCE PAYMENT & CHECKOUT STYLING
+   ========================================================================== */
+
+/* Payment Method Header in Classic & Block Checkout */
+.aavni-payment-method-header,
+.aavni-rzp-checkout-label {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  width: 100%;
+  font-family: var(--font-body);
+}
+
+.aavni-payment-name,
+.aavni-rzp-label-title {
+  font-weight: 600;
+  color: var(--aavni-text);
+  font-size: 15px;
+  letter-spacing: -0.01em;
+}
+
+.aavni-gateway-badges,
+.aavni-rzp-badges {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.aavni-chip,
+.aavni-rzp-tag {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+
+.aavni-chip-upi,
+.aavni-tag-upi {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.aavni-chip-cards,
+.aavni-tag-cards {
+  background: #F5F3FF;
+  color: #6D28D9;
+  border: 1px solid #DDD6FE;
+}
+
+.aavni-chip-nb,
+.aavni-tag-nb {
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+}
+
+.aavni-chip-wallets,
+.aavni-tag-wallets {
+  background: #FFFBEB;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
+.aavni-chip-cod {
+  background: #FDF2F8;
+  color: #BE185D;
+  border: 1px solid #FBCFE8;
+}
+
+/* Payment Method Description Box */
+.aavni-payment-desc-box,
+.aavni-rzp-block-content {
+  background: #FAF9F6;
+  border: 1px solid var(--aavni-border-light);
+  border-radius: var(--radius-md, 8px);
+  padding: 16px 18px;
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: var(--aavni-text-muted);
+}
+
+.aavni-desc-intro,
+.aavni-rzp-desc {
+  margin: 0 0 12px 0;
+  font-size: 13.5px;
+  color: var(--aavni-text);
+  line-height: 1.5;
+}
+
+.aavni-payment-methods-grid,
+.aavni-rzp-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+  margin: 12px 0;
+  padding: 12px 0;
+  border-top: 1px dashed var(--aavni-border);
+  border-bottom: 1px dashed var(--aavni-border);
+}
+
+.aavni-pm-item,
+.aavni-rzp-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--aavni-text-muted);
+}
+
+.aavni-rzp-feat-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.aavni-security-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--aavni-text-subtle);
+}
+
+.aavni-sec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 500;
+}
+
+/* Trust & Guarantees Banner on Checkout */
+.aavni-checkout-trust-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 32px 0 20px;
+  padding: 20px;
+  background: #FAF8F5;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--shadow-sm);
+}
+
+.aavni-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aavni-trust-icon {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.aavni-trust-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.aavni-trust-info strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--aavni-text);
+  margin-bottom: 2px;
+}
+
+.aavni-trust-info span {
+  font-size: 11.5px;
+  color: var(--aavni-text-subtle);
+}
+
+/* Enhancing WooCommerce Checkout Blocks payment accordion styling */
+.wc-block-checkout__payment-method {
+  border: 1px solid var(--aavni-border) !important;
+  border-radius: 8px !important;
+  margin-bottom: 12px !important;
+  background: #FFFFFF !important;
+  transition: all 0.2s ease !important;
+  overflow: hidden !important;
+}
+
+.wc-block-checkout__payment-method:has(input[type="radio"]:checked) {
+  border-color: var(--aavni-terracotta, #A85A48) !important;
+  box-shadow: 0 2px 10px rgba(168, 90, 72, 0.08) !important;
+}
+
+.wc-block-components-checkout-step--payment {
+  margin-top: 24px;
+}
+
+/* Order Pay / Receipt Page Styling */
+.woocommerce-page .woocommerce-order-pay {
+  max-width: 680px;
+  margin: 40px auto;
+  padding: 32px;
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--shadow-md);
+}
+
+.woocommerce-page .woocommerce-order-pay #order_review {
+  margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .aavni-gateway-badges,
+  .aavni-rzp-badges {
+    margin-left: 0;
+    margin-top: 4px;
+    width: 100%;
+  }
+
+  .aavni-payment-methods-grid,
+  .aavni-rzp-features-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .aavni-checkout-trust-banner {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px;
+  }
+}
+
+/* ==========================================================================
+   AAVNI COMPLETE CUSTOMER ACCOUNT & ORDER MANAGEMENT PANEL
+   ========================================================================== */
+
+/* Layout Wrapper */
+.aavni-myaccount-wrapper {
+  display: grid !important;
+  grid-template-columns: 290px 1fr !important;
+  gap: 32px !important;
+  max-width: 1240px !important;
+  margin: 16px auto 60px !important;
+  padding: 0 20px !important;
+  align-items: start !important;
+  box-sizing: border-box !important;
+}
+
+.woocommerce-account .aavni-myaccount-wrapper .aavni-account-sidebar,
+.woocommerce-account .aavni-myaccount-wrapper .woocommerce-MyAccount-navigation {
+  float: none !important;
+  width: 100% !important;
+}
+
+.woocommerce-account .aavni-myaccount-wrapper .aavni-account-main,
+.woocommerce-account .aavni-myaccount-wrapper .woocommerce-MyAccount-content {
+  float: none !important;
+  width: 100% !important;
+}
+
+@media (max-width: 960px) {
+  .aavni-myaccount-wrapper {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+    margin: 16px auto 40px !important;
+    padding: 0 16px !important;
+  }
+}
+
+/* Navigation Sidebar Card */
+.woocommerce-account .aavni-nav-card {
+  background: #FFFFFF !important;
+  border: 1px solid var(--aavni-border) !important;
+  border-radius: var(--radius-md, 12px) !important;
+  padding: 22px 18px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+  position: sticky !important;
+  top: 100px !important;
+  box-sizing: border-box !important;
+}
+
+.woocommerce-account .aavni-nav-user-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding-bottom: 18px !important;
+  margin-bottom: 16px !important;
+  border-bottom: 1px solid var(--aavni-border-light) !important;
+}
+
+.woocommerce-account .aavni-nav-avatar {
+  width: 52px !important;
+  height: 52px !important;
+  border-radius: 50% !important;
+  background: #FAF0E6 !important;
+  color: var(--aavni-terracotta, #A85A48) !important;
+  font-family: var(--font-heading) !important;
+  font-weight: 700 !important;
+  font-size: 19px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  border: 2px solid var(--aavni-gold-light, #F4EFE6) !important;
+}
+
+.woocommerce-account .aavni-nav-user-info {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.woocommerce-account .aavni-nav-user-name {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--aavni-text) !important;
+  margin: 0 0 2px 0 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.woocommerce-account .aavni-nav-user-email {
+  font-size: 12px !important;
+  color: var(--aavni-text-subtle) !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin-bottom: 5px !important;
+}
+
+.woocommerce-account .aavni-member-badge {
+  display: inline-block !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  color: #B45309 !important;
+  background: #FFFBEB !important;
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+  width: fit-content !important;
+}
+
+/* Nav Menu List */
+.woocommerce-account .aavni-account-sidebar .aavni-custom-account-nav {
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  width: 100% !important;
+}
+
+.woocommerce-account .aavni-account-sidebar ul.aavni-nav-list,
+.woocommerce-account .woocommerce-MyAccount-navigation ul.aavni-nav-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+  gap: 4px !important;
+  border: none !important;
+}
+
+.woocommerce-account .aavni-account-sidebar li.aavni-nav-item,
+.woocommerce-account .woocommerce-MyAccount-navigation li.aavni-nav-item {
+  list-style: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  width: 100% !important;
+}
+
+.woocommerce-account .aavni-account-sidebar a.aavni-nav-link,
+.woocommerce-account .woocommerce-MyAccount-navigation li a.aavni-nav-link {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 11px 14px !important;
+  border-radius: 8px !important;
+  color: var(--aavni-text-muted) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.woocommerce-account .aavni-account-sidebar .aavni-nav-icon,
+.woocommerce-account .woocommerce-MyAccount-navigation .aavni-nav-icon {
+  font-size: 16px !important;
+  width: 22px !important;
+  text-align: center !important;
+  flex-shrink: 0 !important;
+}
+
+.woocommerce-account .aavni-account-sidebar .aavni-nav-label,
+.woocommerce-account .woocommerce-MyAccount-navigation .aavni-nav-label {
+  flex-grow: 1 !important;
+}
+
+.woocommerce-account .aavni-account-sidebar .aavni-nav-chevron,
+.woocommerce-account .woocommerce-MyAccount-navigation .aavni-nav-chevron {
+  font-size: 18px !important;
+  line-height: 1 !important;
+  color: var(--aavni-terracotta, #A85A48) !important;
+  font-weight: 700 !important;
+}
+
+.woocommerce-account .aavni-account-sidebar a.aavni-nav-link:hover,
+.woocommerce-account .woocommerce-MyAccount-navigation li a.aavni-nav-link:hover {
+  background: #FAF8F5 !important;
+  color: var(--aavni-terracotta, #A85A48) !important;
+}
+
+.woocommerce-account .aavni-account-sidebar li.aavni-nav-item.is-active a.aavni-nav-link,
+.woocommerce-account .woocommerce-MyAccount-navigation li.is-active a.aavni-nav-link,
+body.woocommerce-account .woocommerce-MyAccount-navigation ul li.is-active a {
+  background: #FAF8F5 !important;
+  color: var(--aavni-terracotta, #A85A48) !important;
+  font-weight: 600 !important;
+  border-left: 3px solid var(--aavni-terracotta, #A85A48) !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+/* Reset Astra Parent Theme WooCommerce Navigation Pill Override */
+body.woocommerce-account .woocommerce-MyAccount-navigation,
+body.woocommerce-account .woocommerce-MyAccount-navigation ul,
+body.woocommerce-account .woocommerce-MyAccount-navigation-link,
+body.woocommerce-account li.woocommerce-MyAccount-navigation-link {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+body.woocommerce-account .woocommerce-MyAccount-navigation-link a,
+body.woocommerce-account li.woocommerce-MyAccount-navigation-link a {
+  background: transparent !important;
+  border-radius: 8px !important;
+}
+
+/* Mobile Nav Bar adjustments */
+@media (max-width: 960px) {
+  .woocommerce-account .aavni-nav-card {
+    position: static !important;
+    padding: 16px !important;
+  }
+  .woocommerce-account .aavni-account-sidebar ul.aavni-nav-list,
+  .woocommerce-account .woocommerce-MyAccount-navigation ul.aavni-nav-list {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .woocommerce-account .aavni-account-sidebar li.aavni-nav-item,
+  .woocommerce-account .woocommerce-MyAccount-navigation li.aavni-nav-item {
+    width: auto !important;
+  }
+  .woocommerce-account .aavni-account-sidebar a.aavni-nav-link,
+  .woocommerce-account .woocommerce-MyAccount-navigation li a.aavni-nav-link {
+    padding: 8px 14px !important;
+    font-size: 12.5px !important;
+    background: #FAF8F5 !important;
+    border-radius: 6px !important;
+  }
+  .woocommerce-account .aavni-account-sidebar .aavni-nav-chevron,
+  .woocommerce-account .woocommerce-MyAccount-navigation .aavni-nav-chevron {
+    display: none !important;
+  }
+}
+
+/* Dashboard Welcome Banner */
+.aavni-welcome-banner {
+  background: linear-gradient(135deg, #FAF8F5 0%, #F5EFE6 100%);
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  padding: 26px 30px;
+  margin-bottom: 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.aavni-welcome-subtitle {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--aavni-terracotta);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.aavni-welcome-title {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--aavni-text);
+  margin: 0 0 8px 0;
+}
+
+.aavni-welcome-desc {
+  font-size: 13.5px;
+  color: var(--aavni-text-muted);
+  max-width: 600px;
+  margin: 0;
+  line-height: 1.55;
+}
+
+.aavni-welcome-badge {
+  text-align: center;
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border);
+  border-radius: 8px;
+  padding: 12px 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.aavni-gold-seal {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--aavni-gold-hover, #AF8E60);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.aavni-welcome-badge small {
+  font-size: 11px;
+  color: var(--aavni-text-subtle);
+}
+
+/* Stats 4-Grid */
+.aavni-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.aavni-stat-card {
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.aavni-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.aavni-stat-icon-wrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.aavni-stat-number {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--aavni-text);
+  line-height: 1.1;
+  display: block;
+}
+
+.aavni-stat-label {
+  font-size: 12.5px;
+  color: var(--aavni-text-subtle);
+  margin-top: 2px;
+  display: block;
+}
+
+.aavni-stat-link {
+  margin-top: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--aavni-terracotta);
+  text-decoration: none;
+}
+
+/* Custom Table */
+.aavni-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  background: #FFFFFF;
+  box-shadow: var(--shadow-sm);
+}
+
+.aavni-custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.aavni-custom-table th {
+  background: #FAF8F5;
+  color: var(--aavni-text);
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--aavni-border);
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.aavni-custom-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--aavni-border-light);
+  color: var(--aavni-text-muted);
+  vertical-align: middle;
+}
+
+.aavni-custom-table tr:last-child td {
+  border-bottom: none;
+}
+
+.aavni-custom-table tr:hover td {
+  background: #FAF9F8;
+}
+
+/* Status Pills */
+.aavni-status-pill {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.3;
+}
+
+.aavni-status-processing,
+.aavni-status-under_review {
+  background: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+}
+
+.aavni-status-completed,
+.aavni-status-approved,
+.aavni-status-delivered {
+  background: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
+}
+
+.aavni-status-pending,
+.aavni-status-on-hold,
+.aavni-status-open,
+.aavni-status-submitted {
+  background: #FFFBEB;
+  color: #B45309;
+  border: 1px solid #FDE68A;
+}
+
+.aavni-status-cancelled,
+.aavni-status-failed,
+.aavni-status-rejected {
+  background: #FEF2F2;
+  color: #B91C1C;
+  border: 1px solid #FECACA;
+}
+
+/* Order Item Card (My Orders Page) */
+.aavni-order-item-card {
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.aavni-order-item-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.aavni-order-card-header {
+  background: #FAF8F5;
+  border-bottom: 1px solid var(--aavni-border-light);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.aavni-order-header-meta {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.aavni-card-meta-label {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--aavni-text-subtle);
+  margin-bottom: 2px;
+}
+
+.aavni-card-meta-val {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--aavni-text);
+}
+
+.aavni-order-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.aavni-order-card-body {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 24px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .aavni-order-card-body {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+.aavni-order-products-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.aavni-order-product-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.aavni-order-product-thumb {
+  width: 54px;
+  height: 68px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #F5F5F5;
+  flex-shrink: 0;
+  border: 1px solid var(--aavni-border-light);
+}
+
+.aavni-order-product-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.aavni-order-product-title {
+  margin: 0 0 4px 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.aavni-order-product-title a {
+  color: var(--aavni-text);
+  text-decoration: none;
+}
+
+.aavni-order-product-title a:hover {
+  color: var(--aavni-terracotta);
+}
+
+.aavni-order-product-meta {
+  font-size: 12.5px;
+  color: var(--aavni-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.aavni-order-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Buttons */
+.aavni-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13.5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+}
+
+.aavni-btn-primary {
+  background: var(--aavni-terracotta, #A85A48);
+  color: #FFFFFF !important;
+  border: 1px solid var(--aavni-terracotta, #A85A48);
+}
+
+.aavni-btn-primary:hover {
+  background: #8F4939;
+}
+
+.aavni-btn-outline {
+  background: transparent;
+  color: var(--aavni-text) !important;
+  border: 1px solid var(--aavni-border);
+}
+
+.aavni-btn-outline:hover {
+  background: #FAF8F5;
+  border-color: var(--aavni-terracotta);
+  color: var(--aavni-terracotta) !important;
+}
+
+.aavni-btn-ghost {
+  background: #FAF8F5;
+  color: var(--aavni-text) !important;
+  border: 1px dashed var(--aavni-border);
+}
+
+.aavni-btn-ghost:hover {
+  background: #F3EFE9;
+}
+
+.aavni-btn-sm {
+  padding: 7px 14px;
+  font-size: 12px;
+}
+
+/* Forms & Cards */
+.aavni-panel-header {
+  margin-bottom: 22px;
+}
+
+.aavni-panel-title {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--aavni-text);
+  margin: 0 0 4px 0;
+}
+
+.aavni-panel-subtitle {
+  font-size: 13.5px;
+  color: var(--aavni-text-muted);
+  margin: 0;
+}
+
+.aavni-form-card {
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.aavni-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .aavni-form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.aavni-custom-input,
+.aavni-custom-select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--aavni-border);
+  border-radius: 6px;
+  font-size: 13.5px;
+  font-family: var(--font-body);
+  background: #FFFFFF;
+  color: var(--aavni-text);
+  margin-top: 4px;
+}
+
+.aavni-custom-input:focus,
+.aavni-custom-select:focus {
+  outline: none;
+  border-color: var(--aavni-terracotta);
+  box-shadow: 0 0 0 3px rgba(168, 90, 72, 0.1);
+}
+
+/* Order Tracker Timeline */
+.aavni-track-selector-bar {
+  background: #FAF8F5;
+  border: 1px solid var(--aavni-border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+}
+
+.aavni-order-track-card {
+  background: #FFFFFF;
+  border: 1px solid var(--aavni-border);
+  border-radius: var(--radius-md, 12px);
+  padding: 26px;
+  box-shadow: var(--shadow-sm);
+}
+
+.aavni-track-meta-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--aavni-border-light);
+  margin-bottom: 20px;
+}
+
+.aavni-track-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--aavni-text-subtle);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.aavni-track-val {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--aavni-text);
+}
+
+.aavni-courier-info-box {
+  background: #FAF8F5;
+  border: 1px dashed var(--aavni-border);
+  border-radius: 8px;
+  padding: 12px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+/* Timeline Nodes */
+.aavni-timeline-wrapper {
+  position: relative;
+  margin: 36px 0 20px;
+  padding: 0 10px;
+}
+
+.aavni-timeline-track {
+  position: absolute;
+  top: 22px;
+  left: 30px;
+  right: 30px;
+  height: 4px;
+  background: #E8E2D8;
+  z-index: 1;
+}
+
+.aavni-timeline-progress {
+  height: 100%;
+  background: var(--aavni-terracotta, #A85A48);
+  transition: width 0.4s ease;
+}
+
+.aavni-timeline-nodes {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+}
+
+.aavni-timeline-node {
+  text-align: center;
+  max-width: 90px;
+}
+
+.aavni-node-bubble {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  background: #FFFFFF;
+  border: 3px solid #E8E2D8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  color: #999;
+  transition: all 0.3s ease;
+}
+
+.aavni-node-title {
+  font-size: 11.5px;
+  color: var(--aavni-text-subtle);
+  line-height: 1.3;
+  font-weight: 500;
+}
+
+.aavni-timeline-node.is-done .aavni-node-bubble {
+  background: #1E7E34;
+  border-color: #1E7E34;
+  color: #FFFFFF;
+}
+
+.aavni-timeline-node.is-done .aavni-node-title {
+  color: #1E7E34;
+  font-weight: 600;
+}
+
+.aavni-timeline-node.is-active .aavni-node-bubble {
+  background: var(--aavni-terracotta, #A85A48);
+  border-color: var(--aavni-terracotta, #A85A48);
+  color: #FFFFFF;
+  box-shadow: 0 0 0 5px rgba(168, 90, 72, 0.2);
+}
+
+.aavni-timeline-node.is-active .aavni-node-title {
+  color: var(--aavni-terracotta);
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .aavni-timeline-nodes {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .aavni-timeline-track {
+    top: 20px;
+    bottom: 20px;
+    left: 20px;
+    width: 4px;
+    height: auto;
+    right: auto;
+  }
+  .aavni-timeline-node {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: none;
+  }
+  .aavni-node-bubble {
+    margin: 0;
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+  .aavni-node-title {
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,819 @@
+<?php
+/**
+ * WooCommerce Custom Wrapper Template for AAVNI
+ * High-End Luxury Layout with Rich Category Hero, Filters, Specifications & Styling Guide
+ *
+ * @package AAVNI
+ */
+
+get_header();
+
+$is_cat = is_product_category();
+$is_search = is_search();
+$current_term = $is_cat ? get_queried_object() : null;
+$is_long_kurti = $current_term && $current_term->slug === 'long-kurti';
+?>
+
+<main id="primary" class="site-main" style="padding: 24px 0 80px 0;">
+    <div class="aavni-container">
+
+        <!-- Breadcrumbs -->
+        <div style="margin-bottom: 20px; font-size: 13.5px; color: var(--aavni-text-subtle);">
+            <?php woocommerce_breadcrumb(array(
+                'delimiter'   => ' &nbsp;/&nbsp; ',
+                'wrap_before' => '<nav class="woocommerce-breadcrumb" aria-label="Breadcrumb">',
+                'wrap_after'  => '</nav>',
+                'before'      => '',
+                'after'       => '',
+                'home'        => _x('Home', 'breadcrumb', 'woocommerce'),
+            )); ?>
+        </div>
+
+        <?php if ($is_search) : ?>
+            <!-- Search Results Hero Banner -->
+            <div class="aavni-category-hero">
+                <div class="aavni-category-hero-inner">
+                    <div class="aavni-cat-badge">
+                        <span class="aavni-sparkle">🔍</span>
+                        Search Results
+                    </div>
+                    <h1 class="aavni-category-title">
+                        Results for &ldquo;<?php echo esc_html(get_search_query()); ?>&rdquo;
+                    </h1>
+                    <p class="aavni-category-subtitle">
+                        <?php 
+                        global $wp_query; 
+                        $count = $wp_query->found_posts;
+                        if ($count > 0) {
+                            echo sprintf('Found %d authentic handcrafted piece%s matching your search', $count, $count === 1 ? '' : 's');
+                        } else {
+                            echo 'No products found directly matching this keyword. Browse our curated categories below:';
+                        }
+                        ?>
+                    </p>
+                    <div class="aavni-category-description">
+                        Discover pure breathable cotton apparel crafted in Jaipur with artisan block prints and tailored for everyday elegance.
+                    </div>
+
+                    <!-- Quick Filter & Navigation Chips -->
+                    <div class="aavni-filter-chips">
+                        <span class="aavni-chip active">All Results (<?php echo $count; ?>)</span>
+                        <?php
+                        $filter_cats = get_terms([
+                            'taxonomy'   => 'product_cat',
+                            'hide_empty' => true,
+                            'exclude'    => [get_option('default_product_cat', 0)],
+                        ]);
+                        if (!empty($filter_cats) && !is_wp_error($filter_cats)) :
+                            foreach ($filter_cats as $fc) :
+                        ?>
+                            <a href="<?php echo esc_url(get_term_link($fc)); ?>" class="aavni-chip"><?php echo esc_html($fc->name); ?></a>
+                        <?php
+                            endforeach;
+                        else:
+                        ?>
+                            <a href="<?php echo esc_url(home_url('/product-category/long-kurti/')); ?>" class="aavni-chip">Long Kurti</a>
+                            <a href="<?php echo esc_url(home_url('/product-category/short-kurti/')); ?>" class="aavni-chip">Short Kurti</a>
+                            <a href="<?php echo esc_url(home_url('/product-category/tops/')); ?>" class="aavni-chip">Tops</a>
+                            <a href="<?php echo esc_url(home_url('/product-category/nighty/')); ?>" class="aavni-chip">Nighty</a>
+                        <?php endif; ?>
+                        <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>" class="aavni-chip">All Collections</a>
+                    </div>
+                </div>
+            </div>
+        <?php elseif ($is_cat || is_shop()) : 
+            $theme_uri = get_stylesheet_directory_uri();
+            $cat_slug = ($is_cat && $current_term) ? $current_term->slug : '';
+
+            $banner_configs = array(
+                'long-kurti' => array(
+                    'image'       => $theme_uri . '/assets/images/banners/banner-long-kurti.jpg',
+                    'badge'       => 'Jaipur Artisanal • Amazon Verified Bestseller',
+                    'title'       => 'Long Kurti Collection',
+                    'subtitle'    => 'Pure Breathable Cotton · Halter & Collarless Necks · Graceful Calf-Length Silhouettes',
+                    'description' => 'Discover our signature floor and calf-length pure cotton kurtis, crafted with authentic Rajasthani block prints, adjustable halter tie-ups, and breezy side slits tailored for everyday elegance.',
+                    'chips'       => array(
+                        'Halter Neck (Tie-Up)' => '?s=halter',
+                        'Sleeveless Comfort'   => '?s=sleeveless',
+                        '100% Pure Cotton'     => '?s=cotton',
+                        'Under ₹999'           => '?max_price=999',
+                        'Jaipur Motifs'        => '?s=jaipur',
+                    ),
+                ),
+                'short-kurti' => array(
+                    'image'       => $theme_uri . '/assets/images/banners/banner-short-kurti.jpg',
+                    'badge'       => 'Contemporary Classic • Everyday Comfort',
+                    'title'       => 'Short Kurti Collection',
+                    'subtitle'    => 'Hip-Length Tunics · Modern Coordinates · Jaipur Hand-Block Prints',
+                    'description' => 'Chic, versatile cotton short kurtis designed for effortless pairing with denims, trousers, and palazzos. Lightweight, breathable, pre-shrunk, and 100% colorfast.',
+                    'chips'       => array(
+                        'Hip-Length Tunics'  => '?s=tunic',
+                        'Everyday Casuals'   => '?s=casual',
+                        '100% Pure Cotton'   => '?s=cotton',
+                        'Under ₹999'         => '?max_price=999',
+                        'Floral Prints'      => '?s=floral',
+                    ),
+                ),
+                'tops' => array(
+                    'image'       => $theme_uri . '/assets/images/banners/banner-tops.jpg',
+                    'badge'       => 'Modern Ethnic Fusion • Fresh Arrivals',
+                    'title'       => 'Tops & Tunics Collection',
+                    'subtitle'    => 'Chic Peplums · Flared Tunics · 100% Breathable Cotton',
+                    'description' => 'Express your personal style with our curated artisanal cotton tops, peplum tunics, and contemporary blouses designed for casual outings, college, and ethnic workdays.',
+                    'chips'       => array(
+                        'Peplum Tunics'      => '?s=peplum',
+                        'Indigo & Earthy'    => '?s=indigo',
+                        'Pure Cotton Weave'  => '?s=cotton',
+                        'Under ₹999'         => '?max_price=999',
+                        'Flared Silhouettes' => '?s=flared',
+                    ),
+                ),
+                'nighty' => array(
+                    'image'       => $theme_uri . '/assets/images/banners/banner-nighty.jpg',
+                    'badge'       => 'Ultra-Soft Loungewear • Pure Relaxation',
+                    'title'       => 'Nightwear & Loungewear Collection',
+                    'subtitle'    => 'Featherlight 60s Cambric Cotton · Breathable Roomy Maxis · Skin-Soft',
+                    'description' => 'Experience serene comfort every night with our ultra-soft pure cotton nightgowns and lounge maxis. Gentle on skin, non-restrictive, and crafted for restful all-night relaxation.',
+                    'chips'       => array(
+                        'Pure Cotton Maxis'  => '?s=maxi',
+                        'Featherlight 60s'   => '?s=cambric',
+                        'Floral Lounge'      => '?s=floral',
+                        'Under ₹999'         => '?max_price=999',
+                        'Relaxed Fit'        => '?s=relaxed',
+                    ),
+                ),
+            );
+
+            $active_banner = null;
+            if (isset($banner_configs[$cat_slug])) {
+                $active_banner = $banner_configs[$cat_slug];
+            } elseif (strpos($cat_slug, 'long') !== false) {
+                $active_banner = $banner_configs['long-kurti'];
+            } elseif (strpos($cat_slug, 'short') !== false) {
+                $active_banner = $banner_configs['short-kurti'];
+            } elseif (strpos($cat_slug, 'top') !== false) {
+                $active_banner = $banner_configs['tops'];
+            } elseif (strpos($cat_slug, 'night') !== false) {
+                $active_banner = $banner_configs['nighty'];
+            } else {
+                $dynamic_chips = array();
+                $all_store_cats = get_terms([
+                    'taxonomy'   => 'product_cat',
+                    'hide_empty' => true,
+                    'exclude'    => [get_option('default_product_cat', 0)],
+                ]);
+                if (!empty($all_store_cats) && !is_wp_error($all_store_cats)) {
+                    foreach ($all_store_cats as $asc) {
+                        $dynamic_chips[$asc->name] = get_term_link($asc);
+                    }
+                } else {
+                    $dynamic_chips = array(
+                        'Long Kurti'   => home_url('/product-category/long-kurti/'),
+                        'Short Kurti'  => home_url('/product-category/short-kurti/'),
+                        'Tops'         => home_url('/product-category/tops/'),
+                        'Nighty'       => home_url('/product-category/nighty/'),
+                    );
+                }
+
+                $active_banner = array(
+                    'image'       => $theme_uri . '/assets/images/banners/banner-long-kurti.jpg',
+                    'badge'       => 'AAVNI Artisanal Collection • 100% Pure Cotton',
+                    'title'       => $is_cat ? single_term_title('', false) : 'All Collections',
+                    'subtitle'    => 'Handcrafted Pure Cotton Kurtis, Tunics, Tops & Loungewear',
+                    'description' => ($is_cat && !empty($current_term->description)) ? $current_term->description : 'Discover our curated selection of breathable, pre-shrunk cotton apparel crafted in Jaipur with authentic floral and geometric block motifs designed for lasting everyday comfort.',
+                    'chips'       => $dynamic_chips,
+                );
+            }
+        ?>
+            <!-- Category / Shop Luxury Hero Banner with Real Photo -->
+            <div class="aavni-category-banner-wrap">
+                <div class="aavni-category-banner-img-box">
+                    <img src="<?php echo esc_url($active_banner['image']); ?>" 
+                         alt="<?php echo esc_attr($active_banner['title']); ?>" 
+                         class="aavni-category-banner-img" 
+                         loading="eager" 
+                         width="1200" 
+                         height="540">
+                </div>
+
+                <!-- Category Header Bar & Quick Filter Chips -->
+                <div class="aavni-category-nav-bar">
+                    <div class="aavni-cat-nav-title-group">
+                        <div class="aavni-cat-badge">
+                            <span class="aavni-sparkle">✦</span>
+                            <?php echo esc_html($active_banner['badge']); ?>
+                        </div>
+                        <h1 class="aavni-category-page-title">
+                            <?php echo esc_html($active_banner['title']); ?>
+                        </h1>
+                        <p class="aavni-category-subtitle" style="margin: 0; font-size: 14.5px; color: var(--aavni-terracotta); font-weight: 500;">
+                            <?php echo esc_html($active_banner['subtitle']); ?>
+                        </p>
+                    </div>
+
+                    <!-- Quick Filter Chips -->
+                    <div class="aavni-filter-chips">
+                        <span class="aavni-chip active">All Designs (<?php global $wp_query; echo $wp_query->found_posts; ?>)</span>
+                        <?php foreach ($active_banner['chips'] as $chip_label => $chip_link) : ?>
+                            <a href="<?php echo esc_url($chip_link); ?>" class="aavni-chip"><?php echo esc_html($chip_label); ?></a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Category Trust Strip -->
+                <div class="aavni-category-trust-strip">
+                    <div class="aavni-cat-trust-item">
+                        <span class="aavni-trust-emoji">🚚</span>
+                        <div><strong>Free Express Delivery</strong><span>On orders ₹999+</span></div>
+                    </div>
+                    <div class="aavni-cat-trust-item">
+                        <span class="aavni-trust-emoji">🌿</span>
+                        <div><strong>100% Pure Cotton</strong><span>60s Cambric Breathable Weave</span></div>
+                    </div>
+                    <div class="aavni-cat-trust-item">
+                        <span class="aavni-trust-emoji">🔄</span>
+                        <div><strong>10-Day Easy Exchanges</strong><span>Hassle-free doorstep pickup</span></div>
+                    </div>
+                    <div class="aavni-cat-trust-item">
+                        <span class="aavni-trust-emoji">💵</span>
+                        <div><strong>Cash on Delivery (COD)</strong><span>Pay securely at your doorstep</span></div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- WooCommerce Main Content -->
+        <div class="aavni-wc-content-wrapper">
+            <?php woocommerce_content(); ?>
+        </div>
+
+        <?php if ($is_long_kurti) : ?>
+            <!-- Editorial Category Guide & Styling Handbook (Amazon/Gulab Chand Style) -->
+            <section class="aavni-category-editorial-guide">
+                <div class="aavni-guide-header">
+                    <span class="aavni-eyebrow">The Fabric & Styling Guide</span>
+                    <h2>AAVNI Long Kurti Handbook</h2>
+                    <p>Designed in Jaipur with centuries-old Rajasthani block printing traditions, tailored for modern comfort.</p>
+                </div>
+
+                <div class="aavni-guide-cards-grid">
+                    <div class="aavni-guide-card">
+                        <div class="aavni-guide-num">01</div>
+                        <h3>100% Pure Cambric Cotton</h3>
+                        <p>We use premium 60s combed pure cotton yarn. Pre-shrunk and breathable, it allows continuous air circulation to keep you cool and fresh throughout warm summer days.</p>
+                    </div>
+                    <div class="aavni-guide-card">
+                        <div class="aavni-guide-num">02</div>
+                        <h3>Adjustable Halter Tie-Up Back</h3>
+                        <p>Our signature halter neck cut features an adjustable back tie-up with handcrafted fabric tassels. Easily customize the neckline tightness and bust fit to your personal preference.</p>
+                    </div>
+                    <div class="aavni-guide-card">
+                        <div class="aavni-guide-num">03</div>
+                        <h3>Calf Length & Deep Side Slits</h3>
+                        <p>Cut to a graceful 44-inch calf length with side slits that allow unrestricted leg movement. Coordinates seamlessly with wide-leg palazzos, leggings, or jeans.</p>
+                    </div>
+                </div>
+
+                <!-- Styling Matrix -->
+                <div class="aavni-styling-matrix">
+                    <h3>How To Style AAVNI Long Kurtis</h3>
+                    <div class="aavni-matrix-table-wrap">
+                        <table class="aavni-matrix-table">
+                            <thead>
+                                <tr>
+                                    <th>Occasion</th>
+                                    <th>Bottom Wear</th>
+                                    <th>Footwear</th>
+                                    <th>Accessories</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Casual Everyday & College</strong></td>
+                                    <td>Light blue cropped denim jeans</td>
+                                    <td>Tan leather Kolhapuri juttis or flats</td>
+                                    <td>Minimalist wooden bangles & canvas tote</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Office & Ethnic Workdays</strong></td>
+                                    <td>Straight ankle-length off-white cotton trousers</td>
+                                    <td>Comfort block heels or mules</td>
+                                    <td>Small silver stud earrings & structured bag</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Festive & Evening Dinners</strong></td>
+                                    <td>Flared ivory palazzos or tiered skirt</td>
+                                    <td>Embroidered Punjabi juttis</td>
+                                    <td>Oxidized silver jhumkas & kohl eyes</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Category FAQs Accordion -->
+                <div class="aavni-category-faqs">
+                    <h3>Frequently Asked Questions About AAVNI Long Kurtis</h3>
+                    <div class="aavni-faq-accordion">
+                        <details class="aavni-faq-item" open>
+                            <summary><strong>Is the fabric 100% pure cotton?</strong></summary>
+                            <p>Yes, all AAVNI long kurtis are crafted from 100% pure cambric cotton. The fabric is lightweight, skin-friendly, and pre-shrunk for lasting quality and zero transparency.</p>
+                        </details>
+                        <details class="aavni-faq-item">
+                            <summary><strong>How does the halter neck tie-up back work?</strong></summary>
+                            <p>The halter neck has soft fabric cords that tie neatly behind the neck or upper back. This allows you to tighten or loosen the bust fit as needed, providing a tailored silhouette.</p>
+                        </details>
+                        <details class="aavni-faq-item">
+                            <summary><strong>What is the length and fit of this long kurti?</strong></summary>
+                            <p>Our long kurtis are calf-length (approx. 44 inches) with a regular straight fit and comfortable side slits that ensure effortless movement.</p>
+                        </details>
+                        <details class="aavni-faq-item">
+                            <summary><strong>Can I exchange if the size does not fit?</strong></summary>
+                            <p>Absolutely! We offer a 10-day hassle-free exchange policy. If the size doesn't fit, our courier partner will pick up the piece from your doorstep and deliver the replacement size free of charge.</p>
+                        </details>
+                    </div>
+                </div>
+            </section>
+        <?php endif; ?>
+
+    </div>
+</main>
+
+<style>
+/* Category Hero Styling */
+.aavni-category-hero {
+    background: linear-gradient(135deg, #FAF8F5 0%, #F5EFE6 100%);
+    border: 1px solid var(--aavni-border);
+    border-radius: var(--radius-md);
+    padding: 36px 40px;
+    margin-bottom: 36px;
+    box-shadow: var(--shadow-sm);
+}
+.aavni-cat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--aavni-terracotta);
+    background: #FFF;
+    border: 1px solid var(--aavni-border);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+}
+.aavni-category-title {
+    font-size: 38px;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+    color: var(--aavni-text);
+}
+.aavni-category-subtitle {
+    font-size: 16px;
+    color: var(--aavni-terracotta);
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+.aavni-category-description {
+    font-size: 15px;
+    color: var(--aavni-text-muted);
+    line-height: 1.7;
+    max-width: 900px;
+    margin-bottom: 24px;
+}
+.aavni-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 28px;
+}
+.aavni-chip {
+    display: inline-block;
+    padding: 7px 16px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--aavni-text);
+    background: #FFFFFF;
+    border: 1px solid var(--aavni-border);
+    transition: var(--transition);
+    text-decoration: none;
+}
+.aavni-chip:hover, .aavni-chip.active {
+    background: var(--aavni-text);
+    color: #FFFFFF;
+    border-color: var(--aavni-text);
+}
+.aavni-category-trust-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid var(--aavni-border);
+}
+.aavni-cat-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.aavni-trust-emoji {
+    font-size: 24px;
+}
+.aavni-cat-trust-item strong {
+    display: block;
+    font-size: 13.5px;
+    color: var(--aavni-text);
+}
+.aavni-cat-trust-item span {
+    font-size: 12px;
+    color: var(--aavni-text-muted);
+}
+
+/* Category Guide Handbook */
+.aavni-category-editorial-guide {
+    margin-top: 70px;
+    padding-top: 50px;
+    border-top: 2px solid var(--aavni-border-light);
+}
+.aavni-guide-header {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 40px auto;
+}
+.aavni-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--aavni-gold);
+    display: block;
+    margin-bottom: 8px;
+}
+.aavni-guide-header h2 {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+.aavni-guide-header p {
+    font-size: 15px;
+    color: var(--aavni-text-muted);
+}
+.aavni-guide-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin-bottom: 48px;
+}
+.aavni-guide-card {
+    background: #FFFFFF;
+    border: 1px solid var(--aavni-border-light);
+    border-radius: var(--radius-md);
+    padding: 32px 28px;
+    box-shadow: var(--shadow-sm);
+}
+.aavni-guide-num {
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--aavni-gold);
+    margin-bottom: 12px;
+}
+.aavni-guide-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--aavni-text);
+}
+.aavni-guide-card p {
+    font-size: 14px;
+    color: var(--aavni-text-muted);
+    line-height: 1.7;
+    margin: 0;
+}
+.aavni-styling-matrix {
+    background: #FAF8F5;
+    border: 1px solid var(--aavni-border);
+    border-radius: var(--radius-md);
+    padding: 36px 32px;
+    margin-bottom: 48px;
+}
+.aavni-styling-matrix h3 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.aavni-matrix-table-wrap {
+    overflow-x: auto;
+}
+.aavni-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #FFFFFF;
+    border-radius: 6px;
+    overflow: hidden;
+    font-size: 14px;
+}
+.aavni-matrix-table th {
+    background: #F3EFE9;
+    padding: 14px 18px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--aavni-text);
+    border-bottom: 1px solid var(--aavni-border);
+}
+.aavni-matrix-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #F0ECE4;
+    color: var(--aavni-text-muted);
+}
+.aavni-category-faqs {
+    max-width: 860px;
+    margin: 0 auto;
+}
+.aavni-category-faqs h3 {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 24px;
+}
+.aavni-faq-accordion details {
+    background: #FFFFFF;
+    border: 1px solid var(--aavni-border-light);
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    padding: 16px 20px;
+    transition: var(--transition);
+}
+.aavni-faq-accordion details summary {
+    font-size: 15.5px;
+    cursor: pointer;
+    color: var(--aavni-text);
+    outline: none;
+}
+.aavni-faq-accordion details p {
+    margin: 12px 0 0 0;
+    font-size: 14.5px;
+    color: var(--aavni-text-muted);
+    line-height: 1.7;
+}
+
+/* Card Badges & Ratings in Grid */
+.aavni-card-badge-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 5;
+    pointer-events: none;
+}
+.aavni-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.aavni-badge-bestseller {
+    background: #B12704;
+    color: #FFFFFF;
+}
+.aavni-badge-discount {
+    background: #A85A48;
+    color: #FFFFFF;
+}
+.aavni-badge-fabric {
+    background: #1B1A18;
+    color: #FFFFFF;
+}
+.aavni-card-rating {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 6px 0;
+    font-size: 12.5px;
+}
+.aavni-stars {
+    color: #E67A00;
+    letter-spacing: 1px;
+}
+.aavni-rating-num {
+    font-weight: 700;
+    color: var(--aavni-text);
+}
+.aavni-rating-count {
+    color: var(--aavni-text-subtle);
+}
+.aavni-card-extra-details {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 8px 0 12px 0;
+    padding-top: 8px;
+    border-top: 1px dashed var(--aavni-border-light);
+}
+.aavni-card-swatches {
+    display: flex;
+    gap: 5px;
+}
+.aavni-swatch-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: inline-block;
+    border: 1px solid #FFF;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.15);
+}
+.aavni-card-sizes {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--aavni-text-subtle);
+    display: flex;
+    gap: 4px;
+}
+.aavni-card-sizes span {
+    background: #FAF8F5;
+    border: 1px solid var(--aavni-border-light);
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+/* Offers Box on Single Product */
+.aavni-offers-box {
+    background: #FAF8F5;
+    border: 1px solid var(--aavni-border);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin: 18px 0;
+}
+.aavni-offers-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    color: var(--aavni-text);
+    margin-bottom: 12px;
+}
+.aavni-offers-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+.aavni-offer-card {
+    background: #FFFFFF;
+    border: 1px solid var(--aavni-border-light);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+}
+.aavni-offer-tag {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--aavni-gold);
+    margin-bottom: 4px;
+}
+.aavni-offer-card strong {
+    display: block;
+    font-size: 12.5px;
+    color: var(--aavni-text);
+    margin-bottom: 4px;
+}
+.aavni-offer-card p {
+    font-size: 11.5px;
+    color: var(--aavni-text-muted);
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Delivery Pincode Checker */
+.aavni-delivery-checker {
+    background: #FFFFFF;
+    border: 1px solid var(--aavni-border-light);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    margin: 20px 0;
+}
+.aavni-pincode-input-wrap {
+    display: flex;
+    gap: 8px;
+}
+.aavni-pincode-input-wrap input {
+    flex-grow: 1;
+    padding: 9px 12px;
+    border: 1px solid var(--aavni-border);
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-family: var(--font-body);
+}
+.aavni-pincode-input-wrap input:focus {
+    outline: none;
+    border-color: var(--aavni-gold);
+}
+.aavni-pincode-input-wrap button {
+    background: var(--aavni-text);
+    color: #FFFFFF;
+    border: none;
+    padding: 0 18px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.aavni-pincode-input-wrap button:hover {
+    background: var(--aavni-gold-hover);
+}
+.aavni-pincode-result {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Single Trust Strip */
+.aavni-single-trust-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 24px 0;
+    padding: 16px 0;
+    border-top: 1px solid var(--aavni-border-light);
+    border-bottom: 1px solid var(--aavni-border-light);
+}
+.aavni-trust-item {
+    text-align: center;
+}
+.aavni-trust-icon {
+    font-size: 22px;
+    margin-bottom: 4px;
+}
+.aavni-trust-item strong {
+    display: block;
+    font-size: 12px;
+    color: var(--aavni-text);
+}
+.aavni-trust-item span {
+    font-size: 11px;
+    color: var(--aavni-text-subtle);
+}
+
+/* Review Summary Breakdown */
+.aavni-review-summary-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 36px;
+    align-items: center;
+}
+.aavni-rating-big-box {
+    text-align: center;
+    background: #FAF8F5;
+    border: 1px solid var(--aavni-border);
+    border-radius: var(--radius-sm);
+    padding: 24px;
+}
+.aavni-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13.5px;
+    color: var(--aavni-text);
+    margin-bottom: 8px;
+}
+.aavni-bar-track {
+    flex-grow: 1;
+    height: 12px;
+    background: #EBE7DF;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.aavni-bar-fill {
+    height: 100%;
+    background: #E67A00;
+}
+
+@media (max-width: 768px) {
+    .aavni-category-hero { padding: 24px 20px; }
+    .aavni-category-title { font-size: 26px; }
+    .aavni-category-trust-strip { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .aavni-single-trust-strip { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .aavni-review-summary-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 576px) {
+    .aavni-category-hero { padding: 18px 14px; }
+    .aavni-category-title { font-size: 21px; }
+    .aavni-category-subtitle { font-size: 12.5px; }
+    .aavni-filter-chips { overflow-x: auto !important; flex-wrap: nowrap !important; padding-bottom: 6px !important; -webkit-overflow-scrolling: touch; }
+    .aavni-filter-chips .aavni-chip { flex-shrink: 0 !important; padding: 6px 12px !important; font-size: 11.5px !important; }
+    .aavni-category-trust-strip { grid-template-columns: 1fr; gap: 8px; }
+    .aavni-single-trust-strip { grid-template-columns: 1fr; gap: 8px; }
+    .aavni-card-extra-details { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
+</style>
+
+<?php
+get_footer();

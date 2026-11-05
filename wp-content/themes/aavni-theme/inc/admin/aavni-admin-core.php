@@ -1,0 +1,554 @@
+<?php
+/**
+ * AAVNI E-Commerce Admin Panel Core Controller
+ *
+ * @package AAVNI
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// 1. Require All Modular Subsystem Classes
+require_once __DIR__ . '/class-aavni-admin-dashboard.php';
+require_once __DIR__ . '/class-aavni-admin-orders.php';
+require_once __DIR__ . '/class-aavni-admin-products.php';
+require_once __DIR__ . '/class-aavni-admin-inventory.php';
+require_once __DIR__ . '/class-aavni-admin-returns.php';
+require_once __DIR__ . '/class-aavni-admin-support.php';
+require_once __DIR__ . '/class-aavni-admin-customers.php';
+require_once __DIR__ . '/class-aavni-admin-reviews.php';
+require_once __DIR__ . '/class-aavni-admin-coupons.php';
+require_once __DIR__ . '/class-aavni-admin-reports.php';
+require_once __DIR__ . '/class-aavni-admin-settings.php';
+require_once __DIR__ . '/class-aavni-admin-storefront.php';
+require_once __DIR__ . '/class-aavni-admin-notifications.php';
+require_once __DIR__ . '/class-aavni-new-order-notification.php';
+
+class AAVNI_Admin_Core {
+
+    private static $actions_dispatched = false;
+
+    /**
+     * Initialize Admin Hooks
+     */
+    public static function init() {
+        add_filter('determine_current_user', [__CLASS__, 'determine_portal_user'], 20);
+        add_action('init', [__CLASS__, 'sync_portal_session_auth'], 1);
+        add_action('wp_logout', [__CLASS__, 'on_user_logout']);
+        add_action('admin_menu', [__CLASS__, 'register_admin_menus'], 9);
+        add_action('admin_init', [__CLASS__, 'dispatch_admin_actions']);
+        add_action('init', [__CLASS__, 'dispatch_admin_actions']);
+        add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_assets']);
+        add_action('wp_ajax_aavni_admin_quick_stock_update', [__CLASS__, 'ajax_quick_stock_update']);
+        add_action('wp_ajax_aavni_admin_upload_image', [__CLASS__, 'ajax_upload_image']);
+        add_action('wp_ajax_nopriv_aavni_admin_upload_image', [__CLASS__, 'ajax_upload_image']);
+        add_action('wp_ajax_aavni_quick_milestone_advance', ['AAVNI_Admin_Orders', 'ajax_quick_milestone_advance']);
+        add_action('wp_ajax_aavni_retry_owner_notification', ['AAVNI_New_Order_Notification', 'ajax_retry_notification']);
+        add_action('wp_ajax_aavni_admin_add_category', ['AAVNI_Admin_Products', 'ajax_add_category']);
+        add_action('wp_ajax_aavni_admin_generate_sku', ['AAVNI_Admin_Products', 'ajax_generate_sku']);
+
+        // Boot new-order owner notification engine (works independently of admin session)
+        AAVNI_New_Order_Notification::init();
+
+        // Smooth image processing filters (prevents 2560px threshold & editor failures on XAMPP)
+        add_filter('big_image_size_threshold', '__return_false');
+        add_filter('wp_image_editors', function($editors) {
+            return ['WP_Image_Editor_GD'];
+        });
+
+        // Smart redirect filter: keeps users on frontend admin-portal if action originated there
+        add_filter('wp_redirect', function($location, $status) {
+            $is_frontend_req = isset($_REQUEST['aavni_frontend_portal']) || 
+                (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'admin-portal') !== false);
+            if ($is_frontend_req) {
+                $parsed = wp_parse_url($location);
+                if (!empty($parsed['query'])) {
+                    parse_str($parsed['query'], $query_args);
+                    if (!empty($query_args['page']) && strpos($query_args['page'], 'aavni-') === 0) {
+                        $tab = str_replace('aavni-', '', $query_args['page']);
+                        unset($query_args['page']);
+                        $query_args['tab'] = $tab;
+                        return add_query_arg($query_args, home_url('/admin-portal/'));
+                    }
+                }
+            }
+            return $location;
+        }, 10, 2);
+    }
+
+    /**
+     * Dispatch Admin POST / GET Actions before headers are sent (works in both wp-admin and frontend portal)
+     */
+    public static function dispatch_admin_actions() {
+        if (self::$actions_dispatched) {
+            return;
+        }
+
+        $page = isset($_REQUEST['page']) ? sanitize_text_field($_REQUEST['page']) : '';
+        $tab = isset($_REQUEST['tab']) ? sanitize_text_field($_REQUEST['tab']) : '';
+        $aavni_action = isset($_REQUEST['aavni_action']) ? sanitize_text_field($_REQUEST['aavni_action']) : (isset($_REQUEST['action']) ? sanitize_text_field($_REQUEST['action']) : '');
+
+        if (empty($page) && !empty($tab)) {
+            $page = 'aavni-' . $tab;
+        }
+
+        if (empty($page) && empty($aavni_action)) {
+            return;
+        }
+
+        self::$actions_dispatched = true;
+
+        if ($page === 'aavni-orders' || in_array($aavni_action, ['update_order_milestone', 'add_order_note'], true)) {
+            if (class_exists('AAVNI_Admin_Orders')) {
+                AAVNI_Admin_Orders::handle_actions();
+            }
+        } elseif ($page === 'aavni-products' || in_array($aavni_action, ['quick_add_product', 'edit_product', 'trash'], true)) {
+            if (class_exists('AAVNI_Admin_Products')) {
+                AAVNI_Admin_Products::handle_actions();
+            }
+        } elseif ($page === 'aavni-inventory' || $aavni_action === 'bulk_restock') {
+            if (class_exists('AAVNI_Admin_Inventory')) {
+                AAVNI_Admin_Inventory::handle_actions();
+            }
+        } elseif ($page === 'aavni-returns' || $aavni_action === 'review_return_request') {
+            if (class_exists('AAVNI_Admin_Returns')) {
+                AAVNI_Admin_Returns::handle_actions();
+            }
+        } elseif ($page === 'aavni-support-tickets' || $aavni_action === 'reply_support_ticket') {
+            if (class_exists('AAVNI_Admin_Support')) {
+                AAVNI_Admin_Support::handle_actions();
+            }
+        } elseif ($page === 'aavni-customers' || $aavni_action === 'update_customer_profile') {
+            if (class_exists('AAVNI_Admin_Customers')) {
+                AAVNI_Admin_Customers::handle_actions();
+            }
+        } elseif ($page === 'aavni-reviews') {
+            if (class_exists('AAVNI_Admin_Reviews')) {
+                AAVNI_Admin_Reviews::handle_actions();
+            }
+        } elseif ($page === 'aavni-coupons' || in_array($aavni_action, ['quick_create_coupon', 'trash_coupon'], true)) {
+            if (class_exists('AAVNI_Admin_Coupons')) {
+                AAVNI_Admin_Coupons::handle_actions();
+            }
+        } elseif ($page === 'aavni-settings' || $aavni_action === 'save_aavni_settings') {
+            if (class_exists('AAVNI_Admin_Settings')) {
+                AAVNI_Admin_Settings::handle_actions();
+            }
+        } elseif ($page === 'aavni-storefront' || in_array($aavni_action, ['save_aavni_slider_settings', 'save_aavni_slide', 'delete_aavni_slide', 'move_aavni_slide', 'save_aavni_announcement', 'save_aavni_categories', 'save_aavni_brand_story', 'save_aavni_branding_footer'], true)) {
+            if (class_exists('AAVNI_Admin_Storefront')) {
+                AAVNI_Admin_Storefront::handle_actions();
+            }
+        }
+    }
+
+    /**
+     * Register AAVNI Top-Level & Submenu Pages in WordPress Admin
+     */
+    public static function register_admin_menus() {
+        $cap = 'edit_shop_orders'; // Accessible to Administrator and Shop Manager
+
+        // Top-Level Menu
+        add_menu_page(
+            __('AAVNI Store Manager', 'aavni'),
+            __('AAVNI Store', 'aavni'),
+            $cap,
+            'aavni-dashboard',
+            ['AAVNI_Admin_Dashboard', 'render'],
+            'dashicons-store',
+            55
+        );
+
+        // Submenus
+        add_submenu_page(
+            'aavni-dashboard',
+            __('AAVNI Executive Dashboard', 'aavni'),
+            __('Dashboard', 'aavni'),
+            $cap,
+            'aavni-dashboard',
+            ['AAVNI_Admin_Dashboard', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Orders & Fulfilment Hub', 'aavni'),
+            __('Orders & Fulfilment', 'aavni'),
+            $cap,
+            'aavni-orders',
+            ['AAVNI_Admin_Orders', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Catalog & Products Hub', 'aavni'),
+            __('Catalog & Products', 'aavni'),
+            'edit_products',
+            'aavni-products',
+            ['AAVNI_Admin_Products', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Inventory & Stock Control', 'aavni'),
+            __('Inventory & Stock', 'aavni'),
+            'edit_products',
+            'aavni-inventory',
+            ['AAVNI_Admin_Inventory', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Returns & Exchanges Center', 'aavni'),
+            __('Returns & Exchanges', 'aavni'),
+            $cap,
+            'aavni-returns',
+            ['AAVNI_Admin_Returns', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Customer Support Desk', 'aavni'),
+            __('Support Tickets', 'aavni'),
+            $cap,
+            'aavni-support-tickets',
+            ['AAVNI_Admin_Support', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Customer Management Directory', 'aavni'),
+            __('Customers Directory', 'aavni'),
+            'list_users',
+            'aavni-customers',
+            ['AAVNI_Admin_Customers', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Product Reviews Moderation', 'aavni'),
+            __('Reviews & Ratings', 'aavni'),
+            'moderate_comments',
+            'aavni-reviews',
+            ['AAVNI_Admin_Reviews', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Coupons & Promotions Hub', 'aavni'),
+            __('Coupons & Offers', 'aavni'),
+            'manage_woocommerce',
+            'aavni-coupons',
+            ['AAVNI_Admin_Coupons', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Sales Reports & Analytics', 'aavni'),
+            __('Sales & Analytics', 'aavni'),
+            $cap,
+            'aavni-reports',
+            ['AAVNI_Admin_Reports', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Shipping, Taxes & Store Setup', 'aavni'),
+            __('Store Setup & Taxes', 'aavni'),
+            'manage_woocommerce',
+            'aavni-settings',
+            ['AAVNI_Admin_Settings', 'render']
+        );
+
+        add_submenu_page(
+            'aavni-dashboard',
+            __('Storefront & Content Customizer', 'aavni'),
+            __('Storefront & Slider', 'aavni'),
+            'manage_woocommerce',
+            'aavni-storefront',
+            ['AAVNI_Admin_Storefront', 'render']
+        );
+    }
+
+    /**
+     * Enqueue Admin Styles & Scripts on AAVNI Screens
+     */
+    public static function enqueue_admin_assets($hook) {
+        if (strpos($hook, 'aavni') === false) {
+            return;
+        }
+
+        // Google Fonts
+        wp_enqueue_style('aavni-google-fonts', 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Urbanist:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap', [], null);
+
+        // AAVNI Admin CSS
+        wp_enqueue_style(
+            'aavni-admin-css',
+            get_stylesheet_directory_uri() . '/assets/css/aavni-admin.css',
+            [],
+            filemtime(get_stylesheet_directory() . '/assets/css/aavni-admin.css')
+        );
+
+        // Enqueue WordPress Media Uploader for catalog / product image selection & storefront customizer
+        if (strpos($hook, 'aavni-products') !== false || strpos($hook, 'aavni-storefront') !== false) {
+            wp_enqueue_media();
+        }
+
+        // AAVNI Admin JS
+        wp_enqueue_script(
+            'aavni-admin-js',
+            get_stylesheet_directory_uri() . '/assets/js/aavni-admin.js',
+            ['jquery'],
+            filemtime(get_stylesheet_directory() . '/assets/js/aavni-admin.js'),
+            true
+        );
+
+        wp_localize_script('aavni-admin-js', 'aavniAdminParams', [
+            'ajax_url'        => admin_url('admin-ajax.php'),
+            'stock_nonce'     => wp_create_nonce('aavni_admin_quick_stock'),
+            'milestone_nonce' => wp_create_nonce('aavni_quick_milestone_advance'),
+        ]);
+    }
+
+    /**
+     * Render Submenu Navigation Pills Bar on every AAVNI Admin Page
+     */
+    public static function render_nav_bar($active_slug, $force_frontend = null) {
+        global $wpdb;
+        $returns_table = $wpdb->prefix . 'aavni_returns';
+        $tickets_table = $wpdb->prefix . 'aavni_support_tickets';
+
+        $pending_returns = (int) $wpdb->get_var("SELECT COUNT(*) FROM $returns_table WHERE status IN ('submitted', 'under_review')");
+        $open_tickets = (int) $wpdb->get_var("SELECT COUNT(*) FROM $tickets_table WHERE status IN ('open', 'in_progress')");
+
+        $is_frontend = ($force_frontend !== null) ? (bool) $force_frontend : (!is_admin() || (function_exists('is_page') && is_page('admin-portal')));
+
+        $nav_items = [
+            'dashboard'       => ['label' => 'Dashboard', 'icon' => '✦', 'badge' => 0],
+            'orders'          => ['label' => 'Orders & Fulfilment', 'icon' => '📦', 'badge' => 0],
+            'products'        => ['label' => 'Catalog & Products', 'icon' => '👗', 'badge' => 0],
+            'inventory'       => ['label' => 'Inventory & Stock', 'icon' => '📊', 'badge' => 0],
+            'storefront'      => ['label' => 'Storefront & Slider', 'icon' => '🎨', 'badge' => 0],
+            'returns'         => ['label' => 'Returns & Exchanges', 'icon' => '🔄', 'badge' => $pending_returns],
+            'support-tickets' => ['label' => 'Support Desk', 'icon' => '💬', 'badge' => $open_tickets],
+            'customers'       => ['label' => 'Customers', 'icon' => '👥', 'badge' => 0],
+            'reviews'         => ['label' => 'Reviews', 'icon' => '⭐', 'badge' => 0],
+            'coupons'         => ['label' => 'Coupons', 'icon' => '🏷️', 'badge' => 0],
+            'reports'         => ['label' => 'Analytics', 'icon' => '📈', 'badge' => 0],
+            'settings'        => ['label' => 'Store Setup', 'icon' => '⚙️', 'badge' => 0],
+        ];
+        ?>
+        <nav class="aavni-admin-nav-bar" aria-label="AAVNI Store Navigation">
+            <?php foreach ($nav_items as $slug => $item) :
+                $is_active = ($active_slug === $slug);
+                $url = $is_frontend ? add_query_arg(['tab' => $slug], home_url('/admin-portal/')) : admin_url('admin.php?page=aavni-' . $slug);
+            ?>
+                <a href="<?php echo esc_url($url); ?>" class="aavni-nav-pill <?php echo $is_active ? 'is-active' : ''; ?>">
+                    <span><?php echo esc_html($item['icon']); ?></span>
+                    <span><?php echo esc_html($item['label']); ?></span>
+                    <?php if (!empty($item['badge']) && $item['badge'] > 0) : ?>
+                        <span class="aavni-nav-pill-count"><?php echo esc_html($item['badge']); ?></span>
+                    <?php endif; ?>
+                </a>
+            <?php endforeach; ?>
+        </nav>
+        <?php
+    }
+
+    /**
+     * AJAX Handler for Inline Stock Adjustment
+     */
+    public static function ajax_quick_stock_update() {
+        check_ajax_referer('aavni_admin_quick_stock');
+
+        if (!current_user_can('edit_products')) {
+            wp_send_json_error(['message' => 'Permission denied.']);
+        }
+
+        $prod_id = isset($_POST['product_id']) ? absint($_POST['product_id']) : 0;
+        $stock_qty = isset($_POST['stock_qty']) ? intval($_POST['stock_qty']) : 0;
+
+        $product = wc_get_product($prod_id);
+        if (!$product) {
+            wp_send_json_error(['message' => 'Product not found.']);
+        }
+
+        $product->set_manage_stock(true);
+        $product->set_stock_quantity($stock_qty);
+        $product->set_stock_status($stock_qty > 0 ? 'instock' : 'outofstock');
+        $product->save();
+
+        wp_send_json_success([
+            'product_id' => $prod_id,
+            'new_stock'  => $stock_qty,
+            'status'     => $stock_qty > 0 ? 'instock' : 'outofstock',
+        ]);
+    }
+
+    /**
+     * Check if request has valid AAVNI Admin Portal session token
+     */
+    public static function get_portal_session_user_id() {
+        $session_cookie_name = 'aavni_ops_session';
+        if (!isset($_COOKIE[$session_cookie_name])) {
+            return 0;
+        }
+        $parts = explode(':', sanitize_text_field($_COOKIE[$session_cookie_name]));
+        if (count($parts) !== 3) {
+            return 0;
+        }
+        $c_uid       = absint($parts[0]);
+        $c_hash      = $parts[1];
+        $c_timestamp = absint($parts[2]);
+
+        // Valid within 12 hours (43200 seconds)
+        if ($c_uid > 0 && (time() - $c_timestamp) < 43200) {
+            $saved_token = get_user_meta($c_uid, '_aavni_ops_session_token', true);
+            if (!empty($saved_token)) {
+                $expected_hash = wp_hash($c_uid . '|' . $saved_token);
+                if (hash_equals($expected_hash, $c_hash)) {
+                    $u = get_user_by('id', $c_uid);
+                    if ($u && (user_can($u, 'manage_woocommerce') || user_can($u, 'edit_shop_orders') || user_can($u, 'upload_files'))) {
+                        return $c_uid;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Check if the current request is specifically targeted at the AAVNI Admin Portal
+     * Must return FALSE for all storefront pages, customer account, cart, and checkout!
+     */
+    public static function is_portal_admin_request() {
+        if (isset($_SERVER['REQUEST_URI'])) {
+            $uri = $_SERVER['REQUEST_URI'];
+            // Never intercept customer account, checkout, cart or standard storefront pages
+            if (strpos($uri, 'my-account') !== false || strpos($uri, 'checkout') !== false || strpos($uri, 'cart') !== false) {
+                return false;
+            }
+            if (strpos($uri, 'admin-portal') !== false) {
+                return true;
+            }
+        }
+
+        if (wp_doing_ajax()) {
+            $action = isset($_REQUEST['action']) ? sanitize_key($_REQUEST['action']) : '';
+            if (strpos($action, 'aavni_admin') === 0) {
+                return true;
+            }
+            if (in_array($action, ['query-attachments', 'upload-attachment', 'media-create-image-subsizes'], true)) {
+                $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+                if (strpos($referer, 'admin-portal') !== false) {
+                    return true;
+                }
+            }
+        }
+
+        if (isset($_SERVER['SCRIPT_NAME']) && strpos($_SERVER['SCRIPT_NAME'], 'async-upload.php') !== false) {
+            $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+            if (strpos($referer, 'admin-portal') !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Seamlessly authenticate user ONLY on admin-portal, async-upload.php, and admin-ajax.php requests
+     */
+    public static function determine_portal_user($user_id) {
+        if (!self::is_portal_admin_request()) {
+            return $user_id;
+        }
+
+        $portal_uid = self::get_portal_session_user_id();
+        if ($portal_uid > 0) {
+            if (empty($user_id) || !user_can($user_id, 'manage_woocommerce')) {
+                return $portal_uid;
+            }
+        }
+        return $user_id;
+    }
+
+    /**
+     * Sync official WordPress auth cookie on init ONLY when inside Admin Portal
+     */
+    public static function sync_portal_session_auth() {
+        if (!self::is_portal_admin_request()) {
+            return;
+        }
+
+        $portal_uid = self::get_portal_session_user_id();
+        if ($portal_uid > 0) {
+            if (!is_user_logged_in() || get_current_user_id() !== $portal_uid) {
+                wp_set_current_user($portal_uid);
+                if (!headers_sent()) {
+                    wp_set_auth_cookie($portal_uid, true);
+                }
+            }
+        }
+    }
+
+    /**
+     * Clear admin portal session on user logout
+     */
+    public static function on_user_logout() {
+        $session_cookie_name = 'aavni_ops_session';
+        $cookie_path = !empty(COOKIEPATH) ? COOKIEPATH : '/';
+        setcookie($session_cookie_name, '', time() - 86400, $cookie_path, COOKIE_DOMAIN, is_ssl(), true);
+        setcookie($session_cookie_name, '', time() - 86400, '/', COOKIE_DOMAIN, is_ssl(), true);
+        setcookie('aavni_portal_auth_token', '', time() - 86400, $cookie_path, COOKIE_DOMAIN, is_ssl(), true);
+        setcookie('aavni_portal_auth_token', '', time() - 86400, '/', COOKIE_DOMAIN, is_ssl(), true);
+        unset($_COOKIE[$session_cookie_name]);
+        unset($_COOKIE['aavni_portal_auth_token']);
+    }
+
+    /**
+     * Dedicated direct image upload AJAX handler for Admin Portal
+     */
+    public static function ajax_upload_image() {
+        check_ajax_referer('aavni_admin_quick_stock', 'nonce');
+
+        $portal_uid = self::get_portal_session_user_id();
+        if ($portal_uid > 0 && (!is_user_logged_in() || !current_user_can('upload_files'))) {
+            wp_set_current_user($portal_uid);
+        }
+
+        if (!current_user_can('upload_files')) {
+            wp_send_json_error(['message' => 'Permission denied: cannot upload files.']);
+        }
+
+        if (empty($_FILES['image_file'])) {
+            wp_send_json_error(['message' => 'No image file uploaded.']);
+        }
+
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+
+        if (!empty($_FILES['image_file']['tmp_name']) && is_uploaded_file($_FILES['image_file']['tmp_name'])) {
+            $attachment_id = media_handle_upload('image_file', 0);
+        } else {
+            $attachment_id = media_handle_sideload($_FILES['image_file'], 0);
+        }
+
+        if (is_wp_error($attachment_id)) {
+            wp_send_json_error(['message' => $attachment_id->get_error_message()]);
+        }
+
+        $thumb = wp_get_attachment_image_src($attachment_id, 'thumbnail');
+        $full  = wp_get_attachment_image_src($attachment_id, 'full');
+
+        wp_send_json_success([
+            'id'        => $attachment_id,
+            'url'       => $full ? $full[0] : wp_get_attachment_url($attachment_id),
+            'thumb_url' => $thumb ? $thumb[0] : wp_get_attachment_url($attachment_id),
+            'title'     => get_the_title($attachment_id),
+        ]);
+    }
+}
+
+// Initialize AAVNI Admin Controller
+AAVNI_Admin_Core::init();

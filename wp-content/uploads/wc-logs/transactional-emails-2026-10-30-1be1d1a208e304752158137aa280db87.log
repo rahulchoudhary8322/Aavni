@@ -1,0 +1,15 @@
+2026-10-30T05:52:54+00:00 WARNING Email "new_order" for order #232 failed to send: Could not instantiate mail function. CONTEXT: {"email_type":"new_order","status":"failed","recipient":"Aavni","order":232}
+2026-10-30T05:52:56+00:00 WARNING Email "customer_processing_order" for order #232 failed to send: Could not instantiate mail function. CONTEXT: {"email_type":"customer_processing_order","status":"failed","recipient":"rahulchoudhary8322","order":232}
+2026-10-30T06:14:38+00:00 WARNING Email "customer_note" for order #232 failed to send: Could not instantiate mail function. CONTEXT: {"email_type":"customer_note","status":"failed","recipient":"rahulchoudhary8322","order":232}
+2026-10-30T06:34:14+00:00 WARNING Email "new_order" for order #233 failed to send: Could not instantiate mail function. CONTEXT: {"email_type":"new_order","status":"failed","recipient":"Aavni","order":233}
+2026-10-30T06:34:16+00:00 WARNING Email "customer_processing_order" for order #233 failed to send: Could not instantiate mail function. CONTEXT: {"email_type":"customer_processing_order","status":"failed","recipient":"rahulchoudhary8322","order":233}
+2026-10-30T06:35:24+00:00 WARNING Email "cancelled_order" for order #233 failed to send: Could not instantiate mail function. CONTEXT: {"email_type":"cancelled_order","status":"failed","recipient":"Aavni","order":233}
+2026-10-30T06:35:24+00:00 NOTICE Email "customer_cancelled_order" for order #233 not sent: email type is disabled CONTEXT: {"email_type":"customer_cancelled_order","status":"disabled","recipient":"rahulchoudhary8322","order":233}
+2026-10-30T06:46:02+00:00 WARNING Email "customer_completed_order" for order #232 failed to send: Could not instantiate mail function. CONTEXT: {"email_type":"customer_completed_order","status":"failed","recipient":"rahulchoudhary8322","order":232}
+2026-10-30T07:14:34+00:00 INFO Email "new_order" for order #234 sent CONTEXT: {"email_type":"new_order","status":"sent","recipient":"Aavni","order":234}
+2026-10-30T07:14:38+00:00 INFO Email "customer_processing_order" for order #234 sent CONTEXT: {"email_type":"customer_processing_order","status":"sent","recipient":"rahulchoudhary8322","order":234}
+2026-10-30T07:17:07+00:00 INFO Email "new_order" for order #235 sent CONTEXT: {"email_type":"new_order","status":"sent","recipient":"Aavni","order":235}
+2026-10-30T07:17:12+00:00 INFO Email "customer_processing_order" for order #235 sent CONTEXT: {"email_type":"customer_processing_order","status":"sent","recipient":"rahulchoudhary8322","order":235}
+2026-10-30T10:59:57+00:00 INFO Email "admin_payment_gateway_enabled" sent CONTEXT: {"email_type":"admin_payment_gateway_enabled","status":"sent","recipient":"Aavni","WC_Razorpay":null}
+2026-10-30T12:05:32+00:00 INFO Email "new_order" for order #237 sent CONTEXT: {"email_type":"new_order","status":"sent","recipient":"Aavni","order":237}
+2026-10-30T12:05:39+00:00 INFO Email "customer_processing_order" for order #237 sent CONTEXT: {"email_type":"customer_processing_order","status":"sent","recipient":"rahulchoudhary8322","order":237}

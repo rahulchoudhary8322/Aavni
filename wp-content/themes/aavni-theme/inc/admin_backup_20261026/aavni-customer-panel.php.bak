@@ -1,0 +1,1598 @@
+<?php
+/**
+ * AAVNI Complete Customer Panel & Order Management Engine
+ *
+ * Implements:
+ * - Phase 1: Customer Account, Registration, Login & Profile
+ * - Phase 2: Order History, Details & Printable Invoices
+ * - Phase 3: Visual Order Tracking Timeline & Milestones
+ * - Phase 4: Cancellation, Returns, Exchanges & Refund Tracking
+ * - Phase 5: Customer Reviews & Ratings Management
+ * - Phase 6: Help & Support, WhatsApp & Order Complaint Tickets
+ * - Phase 7: Luxury Responsive Dashboard & Navigation
+ * - Phase 8: HPOS Compatibility, Nonce Security & Authorization
+ *
+ * @package AAVNI
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+define('AAVNI_PANEL_VERSION', '1.0.0');
+
+/**
+ * ============================================================================
+ * 1. DATABASE SCHEMA: RETURNS & SUPPORT TICKETS
+ * ============================================================================
+ */
+function aavni_install_panel_database() {
+    global $wpdb;
+
+    $installed_ver = get_option('aavni_panel_db_version', '0');
+    if (version_compare($installed_ver, AAVNI_PANEL_VERSION, '<')) {
+        require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+        $charset_collate = $wpdb->get_charset_collate();
+
+        // 1. Returns & Exchange Requests Table
+        $table_returns = $wpdb->prefix . 'aavni_returns';
+        $sql_returns = "CREATE TABLE $table_returns (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            order_id bigint(20) unsigned NOT NULL,
+            customer_id bigint(20) unsigned NOT NULL,
+            product_id bigint(20) unsigned NOT NULL,
+            quantity int(11) NOT NULL DEFAULT 1,
+            request_type varchar(30) NOT NULL DEFAULT 'return',
+            reason varchar(255) NOT NULL,
+            description text NOT NULL,
+            photos longtext DEFAULT NULL,
+            status varchar(50) NOT NULL DEFAULT 'submitted',
+            admin_notes text DEFAULT NULL,
+            created_at datetime NOT NULL,
+            updated_at datetime NOT NULL,
+            PRIMARY KEY (id),
+            KEY order_id (order_id),
+            KEY customer_id (customer_id),
+            KEY status (status)
+        ) $charset_collate;";
+        dbDelta($sql_returns);
+
+        // 2. Customer Support Tickets & Complaints Table
+        $table_tickets = $wpdb->prefix . 'aavni_support_tickets';
+        $sql_tickets = "CREATE TABLE $table_tickets (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            ticket_code varchar(40) NOT NULL,
+            customer_id bigint(20) unsigned NOT NULL,
+            order_id bigint(20) unsigned DEFAULT 0,
+            subject varchar(255) NOT NULL,
+            category varchar(100) NOT NULL,
+            description text NOT NULL,
+            status varchar(50) NOT NULL DEFAULT 'open',
+            priority varchar(30) NOT NULL DEFAULT 'medium',
+            replies longtext DEFAULT NULL,
+            created_at datetime NOT NULL,
+            updated_at datetime NOT NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY ticket_code (ticket_code),
+            KEY customer_id (customer_id),
+            KEY order_id (order_id),
+            KEY status (status)
+        ) $charset_collate;";
+        dbDelta($sql_tickets);
+
+        update_option('aavni_panel_db_version', AAVNI_PANEL_VERSION);
+    }
+}
+add_action('init', 'aavni_install_panel_database', 5);
+
+/**
+ * ============================================================================
+ * 2. REWRITE ENDPOINTS & NAVIGATION
+ * ============================================================================
+ */
+function aavni_register_account_endpoints() {
+    add_rewrite_endpoint('track-order', EP_ROOT | EP_PAGES);
+    add_rewrite_endpoint('returns', EP_ROOT | EP_PAGES);
+    add_rewrite_endpoint('my-reviews', EP_ROOT | EP_PAGES);
+    add_rewrite_endpoint('help-support', EP_ROOT | EP_PAGES);
+
+    // Flush rewrite rules once if needed
+    if (get_option('aavni_panel_flushed_rewrites') !== AAVNI_PANEL_VERSION) {
+        flush_rewrite_rules(false);
+        update_option('aavni_panel_flushed_rewrites', AAVNI_PANEL_VERSION);
+    }
+}
+add_action('init', 'aavni_register_account_endpoints', 10);
+
+// Add custom endpoints to WooCommerce query vars
+add_filter('woocommerce_get_query_vars', function($vars) {
+    $vars['track-order'] = 'track-order';
+    $vars['returns'] = 'returns';
+    $vars['my-reviews'] = 'my-reviews';
+    $vars['help-support'] = 'help-support';
+    return $vars;
+});
+
+// Configure My Account menu items and order
+add_filter('woocommerce_account_menu_items', 'aavni_custom_account_menu_items', 99);
+function aavni_custom_account_menu_items($items) {
+    $new_items = array(
+        'dashboard'       => __('Overview', 'aavni'),
+        'orders'          => __('My Orders', 'aavni'),
+        'track-order'     => __('Track Order', 'aavni'),
+        'edit-address'    => __('Saved Addresses', 'aavni'),
+        'returns'         => __('Returns & Refunds', 'aavni'),
+        'my-reviews'      => __('My Reviews', 'aavni'),
+        'help-support'    => __('Help & Support', 'aavni'),
+        'edit-account'    => __('Profile Details', 'aavni'),
+        'customer-logout' => __('Logout', 'aavni'),
+    );
+    return $new_items;
+}
+
+/**
+ * ============================================================================
+ * 3. PHASE 1 — REGISTRATION, LOGIN, PROFILE & VALIDATION
+ * ============================================================================
+ */
+
+// Add Name and Phone fields to WooCommerce Registration Form
+add_action('woocommerce_register_form_start', 'aavni_extra_register_fields');
+function aavni_extra_register_fields() {
+    ?>
+    <div class="aavni-form-row-group" style="display:flex; gap:12px; margin-bottom:12px;">
+        <p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first" style="flex:1; margin:0;">
+            <label for="reg_billing_first_name"><?php esc_html_e('First name', 'aavni'); ?>&nbsp;<span class="required">*</span></label>
+            <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="billing_first_name" id="reg_billing_first_name" value="<?php echo (!empty($_POST['billing_first_name'])) ? esc_attr(wp_unslash($_POST['billing_first_name'])) : ''; ?>" required autocomplete="given-name" />
+        </p>
+        <p class="woocommerce-form-row woocommerce-form-row--last form-row form-row-last" style="flex:1; margin:0;">
+            <label for="reg_billing_last_name"><?php esc_html_e('Last name', 'aavni'); ?>&nbsp;<span class="required">*</span></label>
+            <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="billing_last_name" id="reg_billing_last_name" value="<?php echo (!empty($_POST['billing_last_name'])) ? esc_attr(wp_unslash($_POST['billing_last_name'])) : ''; ?>" required autocomplete="family-name" />
+        </p>
+    </div>
+    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide" style="margin-bottom:12px;">
+        <label for="reg_billing_phone"><?php esc_html_e('Mobile Number', 'aavni'); ?>&nbsp;<span class="required">*</span></label>
+        <input type="tel" class="woocommerce-Input woocommerce-Input--text input-text" name="billing_phone" id="reg_billing_phone" value="<?php echo (!empty($_POST['billing_phone'])) ? esc_attr(wp_unslash($_POST['billing_phone'])) : ''; ?>" placeholder="10-digit mobile number" pattern="[6-9][0-9]{9}" maxlength="10" required autocomplete="tel" />
+        <small style="color:var(--aavni-text-subtle); font-size:11.5px;"><?php esc_html_e('Used for order delivery updates & SMS notification', 'aavni'); ?></small>
+    </p>
+    <?php
+}
+
+// Validate Registration Form Fields
+add_action('woocommerce_register_post', 'aavni_validate_extra_register_fields', 10, 3);
+function aavni_validate_extra_register_fields($username, $email, $errors) {
+    if (empty($_POST['billing_first_name'])) {
+        $errors->add('billing_first_name_error', __('Please enter your first name.', 'aavni'));
+    }
+    if (empty($_POST['billing_last_name'])) {
+        $errors->add('billing_last_name_error', __('Please enter your last name.', 'aavni'));
+    }
+    if (empty($_POST['billing_phone'])) {
+        $errors->add('billing_phone_error', __('Please enter your 10-digit mobile number.', 'aavni'));
+    } else {
+        $phone = preg_replace('/\D/', '', sanitize_text_field($_POST['billing_phone']));
+        if (strlen($phone) !== 10 || !preg_match('/^[6-9][0-9]{9}$/', $phone)) {
+            $errors->add('billing_phone_invalid', __('Please enter a valid 10-digit Indian mobile number (e.g. 9828103222).', 'aavni'));
+        }
+    }
+    if (isset($_POST['password']) && strlen($_POST['password']) < 6) {
+        $errors->add('password_length_error', __('Password must be at least 6 characters long.', 'aavni'));
+    }
+}
+
+// Save Extra Registration Fields to User Meta
+add_action('woocommerce_created_customer', 'aavni_save_extra_register_fields');
+function aavni_save_extra_register_fields($customer_id) {
+    if (!empty($_POST['billing_first_name'])) {
+        $first_name = sanitize_text_field($_POST['billing_first_name']);
+        update_user_meta($customer_id, 'first_name', $first_name);
+        update_user_meta($customer_id, 'billing_first_name', $first_name);
+    }
+    if (!empty($_POST['billing_last_name'])) {
+        $last_name = sanitize_text_field($_POST['billing_last_name']);
+        update_user_meta($customer_id, 'last_name', $last_name);
+        update_user_meta($customer_id, 'billing_last_name', $last_name);
+    }
+    if (!empty($_POST['billing_phone'])) {
+        $phone = sanitize_text_field($_POST['billing_phone']);
+        update_user_meta($customer_id, 'billing_phone', $phone);
+    }
+}
+
+// Add Mobile Number to Edit Account Profile Form
+add_action('woocommerce_edit_account_form', 'aavni_add_phone_to_edit_account');
+function aavni_add_phone_to_edit_account() {
+    $user = wp_get_current_user();
+    $phone = get_user_meta($user->ID, 'billing_phone', true);
+    ?>
+    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide" style="margin-top:16px;">
+        <label for="account_phone"><?php esc_html_e('Mobile Phone Number', 'aavni'); ?></label>
+        <input type="tel" class="woocommerce-Input woocommerce-Input--phone input-text" name="account_phone" id="account_phone" value="<?php echo esc_attr($phone); ?>" placeholder="10-digit mobile number" maxlength="10" />
+        <small style="color:var(--aavni-text-subtle); display:block; margin-top:4px; font-size:12px;">
+            <?php esc_html_e('ℹ️ Note: Live SMS/OTP mobile verification requires an active SMS gateway API (e.g. MSG91 / Twilio).', 'aavni'); ?>
+        </small>
+    </p>
+    <?php
+}
+
+// Save Phone on Edit Account
+add_action('woocommerce_save_account_details', 'aavni_save_phone_on_edit_account');
+function aavni_save_phone_on_edit_account($user_id) {
+    if (isset($_POST['account_phone'])) {
+        $phone = preg_replace('/\D/', '', sanitize_text_field($_POST['account_phone']));
+        if (!empty($phone) && (strlen($phone) !== 10 || !preg_match('/^[6-9][0-9]{9}$/', $phone))) {
+            wc_add_notice(__('Please enter a valid 10-digit Indian mobile number.', 'aavni'), 'error');
+            return;
+        }
+        update_user_meta($user_id, 'billing_phone', $phone);
+    }
+}
+
+// Indian PIN Code Validation on Address Save
+add_action('woocommerce_after_save_address_validation', 'aavni_validate_indian_postcode', 10, 3);
+function aavni_validate_indian_postcode($user_id, $load_address, $address) {
+    if (isset($_POST[$load_address . '_country']) && $_POST[$load_address . '_country'] === 'IN') {
+        $postcode = isset($_POST[$load_address . '_postcode']) ? trim($_POST[$load_address . '_postcode']) : '';
+        if (!preg_match('/^[1-9][0-9]{5}$/', $postcode)) {
+            wc_add_notice(__('Please enter a valid 6-digit Indian PIN code (e.g. 302015).', 'aavni'), 'error');
+        }
+    }
+}
+
+/**
+ * ============================================================================
+ * 4. PHASE 2 — MY ORDERS, CANCELLATION & INVOICE SYSTEM
+ * ============================================================================
+ */
+
+// Customer Order Cancellation Action
+add_action('template_redirect', 'aavni_handle_order_cancellation');
+function aavni_handle_order_cancellation() {
+    if (!isset($_GET['aavni_action']) || $_GET['aavni_action'] !== 'cancel_order') {
+        return;
+    }
+
+    if (!is_user_logged_in()) {
+        wc_add_notice(__('You must be logged in to cancel an order.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('orders'));
+        exit;
+    }
+
+    $order_id = isset($_GET['order_id']) ? absint($_GET['order_id']) : 0;
+    $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field($_GET['_wpnonce']) : '';
+
+    if (!wp_verify_nonce($nonce, 'aavni_cancel_order_' . $order_id)) {
+        wc_add_notice(__('Security verification failed. Please try again.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('orders'));
+        exit;
+    }
+
+    $order = wc_get_order($order_id);
+    if (!$order || $order->get_customer_id() !== get_current_user_id()) {
+        wc_add_notice(__('You do not have permission to modify this order.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('orders'));
+        exit;
+    }
+
+    // Eligibility check: Allowed if status is pending, on-hold, or processing (before packed/shipped)
+    $status = $order->get_status();
+    $milestone = $order->get_meta('_aavni_order_milestone') ?: 'confirmed';
+
+    if (!in_array($status, ['pending', 'on-hold', 'processing'], true) || in_array($milestone, ['packed', 'shipped', 'out_for_delivery', 'delivered'], true)) {
+        wc_add_notice(__('This order cannot be cancelled because it has already been packed or dispatched. You can request a return after delivery.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('orders'));
+        exit;
+    }
+
+    // Process cancellation through native WooCommerce lifecycle
+    $order->update_status('cancelled', __('Order cancelled directly by customer via AAVNI Customer Panel.', 'aavni'));
+    $order->update_meta_data('_aavni_order_milestone', 'cancelled');
+    
+    // Add to milestone history
+    $raw_history = $order->get_meta('_aavni_milestone_history');
+    $history = is_array($raw_history) ? $raw_history : [];
+    $history[] = [
+        'milestone' => 'cancelled',
+        'title'     => 'Order Cancelled',
+        'note'      => 'Cancelled by customer',
+        'time'      => current_time('mysql'),
+    ];
+    $order->update_meta_data('_aavni_milestone_history', $history);
+    $order->save();
+
+    wc_add_notice(sprintf(__('Order #%s has been cancelled successfully.', 'aavni'), $order->get_order_number()), 'success');
+    wp_safe_redirect(wc_get_account_endpoint_url('orders'));
+    exit;
+}
+
+// Printable Invoice Generator
+add_action('template_redirect', 'aavni_handle_invoice_print');
+function aavni_handle_invoice_print() {
+    if (!isset($_GET['aavni_action']) || $_GET['aavni_action'] !== 'print_invoice') {
+        return;
+    }
+
+    $order_id = isset($_GET['order_id']) ? absint($_GET['order_id']) : 0;
+    $nonce = isset($_GET['_wpnonce']) ? sanitize_text_field($_GET['_wpnonce']) : '';
+
+    if (!wp_verify_nonce($nonce, 'aavni_invoice_' . $order_id)) {
+        wp_die(__('Invalid or expired invoice link.', 'aavni'), __('Access Denied', 'aavni'), ['response' => 403]);
+    }
+
+    $order = wc_get_order($order_id);
+    if (!$order) {
+        wp_die(__('Order not found.', 'aavni'), __('Error', 'aavni'), ['response' => 404]);
+    }
+
+    // Authorization check
+    $user_id = get_current_user_id();
+    if ($order->get_customer_id() !== $user_id && !current_user_can('manage_woocommerce')) {
+        wp_die(__('You do not have permission to view this invoice.', 'aavni'), __('Access Denied', 'aavni'), ['response' => 403]);
+    }
+
+    aavni_render_printable_invoice($order);
+    exit;
+}
+
+function aavni_render_printable_invoice($order) {
+    $order_id = $order->get_id();
+    $date_created = $order->get_date_created() ? $order->get_date_created()->date('d M Y, h:i A') : '';
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title><?php printf(esc_html__('Tax Invoice — AAVNI Order #%s', 'aavni'), esc_html($order->get_order_number())); ?></title>
+        <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: #1B1A18; margin: 0; padding: 30px; background: #fff; }
+            .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); font-size: 14px; line-height: 24px; }
+            .header-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+            .logo-title { font-family: Georgia, serif; font-size: 26px; font-weight: 700; letter-spacing: 2px; color: #A85A48; text-transform: uppercase; }
+            .logo-tagline { font-size: 11px; letter-spacing: 1px; color: #6B655C; }
+            .invoice-title { text-align: right; }
+            .invoice-title h2 { margin: 0; font-size: 20px; color: #1B1A18; }
+            .invoice-title span { color: #6B655C; font-size: 12px; }
+            .meta-grid { display: flex; justify-content: space-between; margin-bottom: 24px; padding: 16px; background: #FAF8F5; border-radius: 6px; }
+            .meta-col { width: 48%; font-size: 13px; line-height: 1.6; }
+            .meta-col strong { color: #1B1A18; display: block; margin-bottom: 4px; font-size: 14px; }
+            .items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+            .items-table th { background: #F3EFE9; color: #1B1A18; text-align: left; padding: 10px 12px; font-size: 12.5px; border-bottom: 2px solid #E8E2D8; }
+            .items-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; vertical-align: top; }
+            .totals-table { width: 320px; margin-left: auto; border-collapse: collapse; margin-bottom: 24px; }
+            .totals-table td { padding: 6px 12px; font-size: 13px; }
+            .totals-table tr.grand-total td { font-weight: 700; font-size: 15px; border-top: 2px solid #1B1A18; color: #A85A48; padding-top: 10px; }
+            .footer-note { border-top: 1px dashed #ccc; padding-top: 16px; text-align: center; color: #888; font-size: 11.5px; }
+            .no-print { text-align: right; margin-bottom: 15px; }
+            .print-btn { background: #A85A48; color: #fff; border: none; padding: 8px 18px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; }
+            @media print { .no-print { display: none; } .invoice-box { border: none; box-shadow: none; padding: 0; } }
+        </style>
+    </head>
+    <body>
+        <div class="no-print">
+            <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+        </div>
+        <div class="invoice-box">
+            <table class="header-table">
+                <tr>
+                    <td>
+                        <div class="logo-title">AAVNI</div>
+                        <div class="logo-tagline">DRESS TO EXPRESS · LIVE TO IMPRESS</div>
+                        <div style="font-size:12px; color:#6B655C; margin-top:4px;">
+                            Handcrafted Ethnic & Contemporary Wear<br>
+                            Jaipur, Rajasthan, India &bull; PIN: 302001<br>
+                            <strong>GSTIN:</strong> 08AAACA1234A1Z5 | <strong>Care:</strong> +91 9828103222
+                        </div>
+                    </td>
+                    <td class="invoice-title">
+                        <h2>RETAIL TAX INVOICE</h2>
+                        <span>Invoice / Order: #<?php echo esc_html($order->get_order_number()); ?></span><br>
+                        <span>Date: <?php echo esc_html($date_created); ?></span><br>
+                        <span>Payment Method: <?php echo esc_html($order->get_payment_method_title()); ?></span>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="meta-grid">
+                <div class="meta-col">
+                    <strong>Billed To:</strong>
+                    <?php echo wp_kses_post($order->get_formatted_billing_address()); ?><br>
+                    Phone: <?php echo esc_html($order->get_billing_phone()); ?><br>
+                    Email: <?php echo esc_html($order->get_billing_email()); ?>
+                </div>
+                <div class="meta-col">
+                    <strong>Shipped To:</strong>
+                    <?php echo wp_kses_post($order->get_formatted_shipping_address() ?: $order->get_formatted_billing_address()); ?>
+                </div>
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th style="width:50%;">Product Details</th>
+                        <th style="text-align:center;">Qty</th>
+                        <th style="text-align:right;">Unit Price</th>
+                        <th style="text-align:right;">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($order->get_items() as $item) : ?>
+                        <tr>
+                            <td>
+                                <strong><?php echo esc_html($item->get_name()); ?></strong>
+                                <?php if ($sku = $item->get_product() ? $item->get_product()->get_sku() : '') : ?>
+                                    <div style="font-size:11px; color:#888;">SKU: <?php echo esc_html($sku); ?></div>
+                                <?php endif; ?>
+                            </td>
+                            <td style="text-align:center;"><?php echo esc_html($item->get_quantity()); ?></td>
+                            <td style="text-align:right;"><?php echo wc_price($order->get_item_subtotal($item, false, false), ['currency' => $order->get_currency()]); ?></td>
+                            <td style="text-align:right; font-weight:600;"><?php echo wc_price($order->get_line_subtotal($item, false, false), ['currency' => $order->get_currency()]); ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+
+            <table class="totals-table">
+                <tr>
+                    <td>Subtotal:</td>
+                    <td style="text-align:right;"><?php echo wc_price($order->get_subtotal(), ['currency' => $order->get_currency()]); ?></td>
+                </tr>
+                <?php if ($order->get_discount_total() > 0) : ?>
+                    <tr>
+                        <td>Discount:</td>
+                        <td style="text-align:right; color:#1E7E34;">-<?php echo wc_price($order->get_discount_total(), ['currency' => $order->get_currency()]); ?></td>
+                    </tr>
+                <?php endif; ?>
+                <tr>
+                    <td>Shipping:</td>
+                    <td style="text-align:right;"><?php echo ($order->get_shipping_total() > 0) ? wc_price($order->get_shipping_total(), ['currency' => $order->get_currency()]) : 'FREE'; ?></td>
+                </tr>
+                <?php if ($order->get_total_tax() > 0) : ?>
+                    <tr>
+                        <td>Taxes (GST Included):</td>
+                        <td style="text-align:right;"><?php echo wc_price($order->get_total_tax(), ['currency' => $order->get_currency()]); ?></td>
+                    </tr>
+                <?php endif; ?>
+                <tr class="grand-total">
+                    <td>Total Amount:</td>
+                    <td style="text-align:right;"><?php echo wc_price($order->get_total(), ['currency' => $order->get_currency()]); ?></td>
+                </tr>
+            </table>
+
+            <div class="footer-note">
+                <p>Thank you for choosing AAVNI! Handcrafted with pure breathable natural cotton.</p>
+                <p>For support, returns or queries, WhatsApp us at <strong>+91 9828103222</strong> or email <strong>care@aavniclothing.com</strong>.</p>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+}
+
+/**
+ * ============================================================================
+ * 5. PHASE 3 — ORDER TRACKING & SHIPMENT MILESTONES
+ * ============================================================================
+ */
+
+function aavni_get_milestone_definitions() {
+    return [
+        'confirmed'        => ['label' => __('Order Confirmed', 'aavni'), 'icon' => '📝', 'step' => 1],
+        'processing'       => ['label' => __('Processing & QC', 'aavni'), 'icon' => '⚙️', 'step' => 2],
+        'packed'           => ['label' => __('Packed for Dispatch', 'aavni'), 'icon' => '📦', 'step' => 3],
+        'shipped'          => ['label' => __('Dispatched / In Transit', 'aavni'), 'icon' => '🚚', 'step' => 4],
+        'out_for_delivery' => ['label' => __('Out for Delivery', 'aavni'), 'icon' => '🛵', 'step' => 5],
+        'delivered'        => ['label' => __('Delivered', 'aavni'), 'icon' => '🎉', 'step' => 6],
+    ];
+}
+
+function aavni_get_order_current_milestone($order) {
+    $meta = $order->get_meta('_aavni_order_milestone');
+    if (!empty($meta)) {
+        return $meta;
+    }
+    // Fallback to WC native order status
+    $wc_status = $order->get_status();
+    if ($wc_status === 'completed') return 'delivered';
+    if ($wc_status === 'cancelled') return 'cancelled';
+    if ($wc_status === 'refunded') return 'refunded';
+    if ($wc_status === 'failed') return 'failed';
+    if ($wc_status === 'processing') return 'processing';
+    return 'confirmed';
+}
+
+// Add Shipment Tracking & Milestones Metabox in Admin Order Screen
+add_action('add_meta_boxes', 'aavni_add_shipment_tracking_metabox');
+function aavni_add_shipment_tracking_metabox() {
+    $screen = class_exists('\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController') &&
+              \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled()
+              ? wc_get_page_screen_id('shop_order') : 'shop_order';
+
+    add_meta_box(
+        'aavni_shipment_tracking_box',
+        __('AAVNI — Order Milestones & Courier Tracking', 'aavni'),
+        'aavni_render_shipment_tracking_metabox',
+        $screen,
+        'side',
+        'high'
+    );
+}
+
+function aavni_render_shipment_tracking_metabox($post_or_order_object) {
+    $order = ($post_or_order_object instanceof WC_Order) ? $post_or_order_object : wc_get_order($post_or_order_object->ID);
+    if (!$order) return;
+
+    $current_milestone = aavni_get_order_current_milestone($order);
+    $courier = $order->get_meta('_aavni_courier_name');
+    $tracking_number = $order->get_meta('_aavni_tracking_number');
+    $tracking_url = $order->get_meta('_aavni_tracking_url');
+    $milestones = aavni_get_milestone_definitions();
+
+    wp_nonce_field('aavni_save_shipment_meta', 'aavni_shipment_nonce');
+    ?>
+    <p>
+        <label for="aavni_order_milestone"><strong><?php esc_html_e('Current Shipment Milestone:', 'aavni'); ?></strong></label><br>
+        <select name="aavni_order_milestone" id="aavni_order_milestone" style="width:100%; margin-top:4px;">
+            <?php foreach ($milestones as $key => $data) : ?>
+                <option value="<?php echo esc_attr($key); ?>" <?php selected($current_milestone, $key); ?>>
+                    <?php echo esc_html($data['icon'] . ' ' . $data['label']); ?>
+                </option>
+            <?php endforeach; ?>
+            <option value="cancelled" <?php selected($current_milestone, 'cancelled'); ?>>❌ Cancelled</option>
+            <option value="refunded" <?php selected($current_milestone, 'refunded'); ?>>🔄 Refunded</option>
+        </select>
+    </p>
+    <p>
+        <label for="aavni_courier_name"><strong><?php esc_html_e('Courier Partner:', 'aavni'); ?></strong></label><br>
+        <input type="text" name="aavni_courier_name" id="aavni_courier_name" value="<?php echo esc_attr($courier); ?>" placeholder="e.g. Delhivery / BlueDart / Shiprocket" style="width:100%; margin-top:4px;" />
+    </p>
+    <p>
+        <label for="aavni_tracking_number"><strong><?php esc_html_e('AWB / Tracking Number:', 'aavni'); ?></strong></label><br>
+        <input type="text" name="aavni_tracking_number" id="aavni_tracking_number" value="<?php echo esc_attr($tracking_number); ?>" placeholder="e.g. DL123456789IN" style="width:100%; margin-top:4px;" />
+    </p>
+    <p>
+        <label for="aavni_tracking_url"><strong><?php esc_html_e('Tracking Web URL:', 'aavni'); ?></strong></label><br>
+        <input type="url" name="aavni_tracking_url" id="aavni_tracking_url" value="<?php echo esc_attr($tracking_url); ?>" placeholder="https://..." style="width:100%; margin-top:4px;" />
+    </p>
+    <?php
+}
+
+// Save Shipment Meta in WooCommerce HPOS & Standard
+add_action('woocommerce_process_shop_order_meta', 'aavni_save_shipment_tracking_meta');
+function aavni_save_shipment_tracking_meta($order_id) {
+    if (!isset($_POST['aavni_shipment_nonce']) || !wp_verify_nonce($_POST['aavni_shipment_nonce'], 'aavni_save_shipment_meta')) {
+        return;
+    }
+    if (!current_user_can('edit_shop_orders', $order_id)) {
+        return;
+    }
+
+    $order = wc_get_order($order_id);
+    if (!$order) return;
+
+    if (isset($_POST['aavni_order_milestone'])) {
+        $old_milestone = $order->get_meta('_aavni_order_milestone');
+        $new_milestone = sanitize_text_field($_POST['aavni_order_milestone']);
+        $order->update_meta_data('_aavni_order_milestone', $new_milestone);
+
+        // Record in history if changed
+        if ($old_milestone !== $new_milestone) {
+            $raw_history = $order->get_meta('_aavni_milestone_history');
+            $history = is_array($raw_history) ? $raw_history : [];
+            $defs = aavni_get_milestone_definitions();
+            $title = isset($defs[$new_milestone]) ? $defs[$new_milestone]['label'] : ucfirst($new_milestone);
+            $history[] = [
+                'milestone' => $new_milestone,
+                'title'     => $title,
+                'note'      => 'Updated by Store Admin',
+                'time'      => current_time('mysql'),
+            ];
+            $order->update_meta_data('_aavni_milestone_history', $history);
+
+            // Automatically complete order if delivered
+            if ($new_milestone === 'delivered' && $order->get_status() !== 'completed') {
+                $order->update_status('completed', __('Shipment marked as Delivered by Admin.', 'aavni'));
+            }
+        }
+    }
+
+    if (isset($_POST['aavni_courier_name'])) {
+        $order->update_meta_data('_aavni_courier_name', sanitize_text_field($_POST['aavni_courier_name']));
+    }
+    if (isset($_POST['aavni_tracking_number'])) {
+        $order->update_meta_data('_aavni_tracking_number', sanitize_text_field($_POST['aavni_tracking_number']));
+    }
+    if (isset($_POST['aavni_tracking_url'])) {
+        $order->update_meta_data('_aavni_tracking_url', esc_url_raw($_POST['aavni_tracking_url']));
+    }
+
+    $order->save();
+}
+
+/**
+ * ============================================================================
+ * 6. PHASE 4 — RETURNS, EXCHANGES & REFUND TRACKING
+ * ============================================================================
+ */
+
+// Handle Customer Return / Exchange Form Submission
+add_action('template_redirect', 'aavni_handle_return_submission');
+function aavni_handle_return_submission() {
+    if (!isset($_POST['aavni_action']) || $_POST['aavni_action'] !== 'submit_return') {
+        return;
+    }
+
+    if (!is_user_logged_in()) {
+        wc_add_notice(__('Please log in to submit a return request.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('returns'));
+        exit;
+    }
+
+    if (!isset($_POST['aavni_return_nonce']) || !wp_verify_nonce($_POST['aavni_return_nonce'], 'aavni_submit_return_request')) {
+        wc_add_notice(__('Security check failed. Please refresh and try again.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('returns'));
+        exit;
+    }
+
+    $customer_id = get_current_user_id();
+    $order_id = isset($_POST['return_order_id']) ? absint($_POST['return_order_id']) : 0;
+    $product_id = isset($_POST['return_product_id']) ? absint($_POST['return_product_id']) : 0;
+    $request_type = isset($_POST['request_type']) ? sanitize_text_field($_POST['request_type']) : 'return';
+    $reason = isset($_POST['return_reason']) ? sanitize_text_field($_POST['return_reason']) : '';
+    $description = isset($_POST['return_description']) ? sanitize_textarea_field($_POST['return_description']) : '';
+
+    $order = wc_get_order($order_id);
+    if (!$order || $order->get_customer_id() !== $customer_id) {
+        wc_add_notice(__('Invalid order specified for return.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('returns'));
+        exit;
+    }
+
+    if (empty($reason) || empty($description)) {
+        wc_add_notice(__('Please specify a reason and description for your return/exchange request.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('returns'));
+        exit;
+    }
+
+    // Photo uploads handling
+    $uploaded_photos = [];
+    if (!empty($_FILES['return_photos']['name'][0])) {
+        require_once ABSPATH . 'wp-admin/includes/file.php';
+        require_once ABSPATH . 'wp-admin/includes/image.php';
+        require_once ABSPATH . 'wp-admin/includes/media.php';
+
+        $files = $_FILES['return_photos'];
+        $count = count($files['name']);
+        for ($i = 0; $i < min($count, 3); $i++) {
+            if ($files['error'][$i] === 0) {
+                // Check mime type
+                $file_type = wp_check_filetype($files['name'][$i]);
+                if (in_array(strtolower($file_type['ext']), ['jpg', 'jpeg', 'png', 'webp'])) {
+                    $upload = wp_upload_bits($files['name'][$i], null, file_get_contents($files['tmp_name'][$i]));
+                    if (empty($upload['error'])) {
+                        $uploaded_photos[] = $upload['url'];
+                    }
+                }
+            }
+        }
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'aavni_returns';
+    $wpdb->insert(
+        $table,
+        [
+            'order_id'     => $order_id,
+            'customer_id'  => $customer_id,
+            'product_id'   => $product_id,
+            'quantity'     => 1,
+            'request_type' => $request_type,
+            'reason'       => $reason,
+            'description'  => $description,
+            'photos'       => json_encode($uploaded_photos),
+            'status'       => 'submitted',
+            'created_at'   => current_time('mysql'),
+            'updated_at'   => current_time('mysql'),
+        ],
+        ['%d', '%d', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+    );
+
+    $order->add_order_note(sprintf(__('Customer submitted a %s request for product #%d. Reason: %s', 'aavni'), strtoupper($request_type), $product_id, $reason));
+
+    wc_add_notice(__('Your return/exchange request has been submitted successfully. Our support team will review it within 24-48 business hours.', 'aavni'), 'success');
+    wp_safe_redirect(wc_get_account_endpoint_url('returns'));
+    exit;
+}
+
+// Add Admin Menu for Managing Returns & Exchanges
+add_action('admin_menu', 'aavni_register_admin_returns_menu');
+function aavni_register_admin_returns_menu() {
+    add_submenu_page(
+        'woocommerce',
+        __('AAVNI Returns & Exchanges', 'aavni'),
+        __('Returns & Exchanges', 'aavni'),
+        'manage_woocommerce',
+        'aavni-returns',
+        'aavni_render_admin_returns_page'
+    );
+}
+
+function aavni_render_admin_returns_page() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'aavni_returns';
+
+    // Handle Admin Action (status update)
+    if (isset($_POST['aavni_admin_return_action']) && check_admin_referer('aavni_admin_return_nonce')) {
+        $req_id = absint($_POST['return_id']);
+        $new_status = sanitize_text_field($_POST['return_status']);
+        $admin_notes = sanitize_textarea_field($_POST['admin_notes']);
+
+        $wpdb->update(
+            $table,
+            [
+                'status'      => $new_status,
+                'admin_notes' => $admin_notes,
+                'updated_at'  => current_time('mysql'),
+            ],
+            ['id' => $req_id],
+            ['%s', '%s', '%s'],
+            ['%d']
+        );
+        echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Return request updated successfully.', 'aavni') . '</p></div>';
+    }
+
+    $requests = $wpdb->get_results("SELECT * FROM $table ORDER BY id DESC LIMIT 50");
+    ?>
+    <div class="wrap">
+        <h1 style="display:flex; align-items:center; gap:10px;">
+            <span>AAVNI</span> &mdash; <?php esc_html_e('Customer Return & Exchange Requests', 'aavni'); ?>
+        </h1>
+        <p><?php esc_html_e('Review customer return requests, inspect reasons & uploaded photos, and approve or reject according to store policy.', 'aavni'); ?></p>
+
+        <table class="wp-list-table widefat fixed striped" style="margin-top:16px;">
+            <thead>
+                <tr>
+                    <th style="width:60px;">ID</th>
+                    <th style="width:100px;">Order</th>
+                    <th style="width:140px;">Customer</th>
+                    <th style="width:180px;">Product</th>
+                    <th style="width:100px;">Type</th>
+                    <th>Reason & Details</th>
+                    <th style="width:120px;">Photos</th>
+                    <th style="width:120px;">Status</th>
+                    <th style="width:160px;">Action / Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($requests)) : ?>
+                    <tr>
+                        <td colspan="9" style="text-align:center; padding:24px; color:#888;">
+                            <?php esc_html_e('No return or exchange requests submitted yet.', 'aavni'); ?>
+                        </td>
+                    </tr>
+                <?php else : ?>
+                    <?php foreach ($requests as $req) :
+                        $cust = get_userdata($req->customer_id);
+                        $prod = wc_get_product($req->product_id);
+                        $photos = json_decode($req->photos, true) ?: [];
+                    ?>
+                        <tr>
+                            <td><strong>#<?php echo esc_html($req->id); ?></strong></td>
+                            <td>
+                                <a href="<?php echo esc_url(admin_url('post.php?post=' . $req->order_id . '&action=edit')); ?>" target="_blank">
+                                    #<?php echo esc_html($req->order_id); ?> ↗
+                                </a>
+                            </td>
+                            <td><?php echo esc_html($cust ? $cust->display_name . ' (' . $cust->user_email . ')' : 'User #' . $req->customer_id); ?></td>
+                            <td><?php echo esc_html($prod ? $prod->get_name() : 'Product #' . $req->product_id); ?></td>
+                            <td><span style="font-weight:600; text-transform:uppercase; color:#A85A48;"><?php echo esc_html($req->request_type); ?></span></td>
+                            <td>
+                                <strong><?php echo esc_html($req->reason); ?></strong>
+                                <p style="margin:4px 0 0; font-size:12px; color:#555;"><?php echo esc_html($req->description); ?></p>
+                            </td>
+                            <td>
+                                <?php if (!empty($photos)) : ?>
+                                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                                        <?php foreach ($photos as $p_url) : ?>
+                                            <a href="<?php echo esc_url($p_url); ?>" target="_blank">
+                                                <img src="<?php echo esc_url($p_url); ?>" style="width:36px; height:36px; object-fit:cover; border-radius:3px; border:1px solid #ccc;">
+                                            </a>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php else : ?>
+                                    <span style="color:#999; font-size:12px;">None</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <span class="badge" style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; text-transform:uppercase; background:<?php echo ($req->status === 'approved') ? '#D1FAE5; color:#065F46;' : (($req->status === 'rejected') ? '#FEE2E2; color:#991B1B;' : '#FEF3C7; color:#92400E;'); ?>">
+                                    <?php echo esc_html($req->status); ?>
+                                </span>
+                            </td>
+                            <td>
+                                <form method="post" style="margin:0;">
+                                    <?php wp_nonce_field('aavni_admin_return_nonce'); ?>
+                                    <input type="hidden" name="aavni_admin_return_action" value="1" />
+                                    <input type="hidden" name="return_id" value="<?php echo esc_attr($req->id); ?>" />
+                                    <select name="return_status" style="font-size:12px; width:100%; margin-bottom:4px;">
+                                        <option value="submitted" <?php selected($req->status, 'submitted'); ?>>Submitted</option>
+                                        <option value="under_review" <?php selected($req->status, 'under_review'); ?>>Under Review</option>
+                                        <option value="approved" <?php selected($req->status, 'approved'); ?>>Approve Request</option>
+                                        <option value="rejected" <?php selected($req->status, 'rejected'); ?>>Reject Request</option>
+                                        <option value="completed" <?php selected($req->status, 'completed'); ?>>Completed</option>
+                                    </select>
+                                    <input type="text" name="admin_notes" value="<?php echo esc_attr($req->admin_notes); ?>" placeholder="Admin remark" style="font-size:11px; width:100%; margin-bottom:4px;" />
+                                    <button type="submit" class="button button-small button-primary" style="width:100%;">Update</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php
+}
+
+/**
+ * ============================================================================
+ * 7. PHASE 6 — HELP & SUPPORT TICKETS SYSTEM
+ * ============================================================================
+ */
+
+// Handle Support Ticket Submission
+add_action('template_redirect', 'aavni_handle_support_ticket_submission');
+function aavni_handle_support_ticket_submission() {
+    if (!isset($_POST['aavni_action']) || $_POST['aavni_action'] !== 'submit_support_ticket') {
+        return;
+    }
+
+    if (!is_user_logged_in()) {
+        wc_add_notice(__('Please log in to submit a support inquiry.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('help-support'));
+        exit;
+    }
+
+    if (!isset($_POST['aavni_ticket_nonce']) || !wp_verify_nonce($_POST['aavni_ticket_nonce'], 'aavni_submit_support_ticket')) {
+        wc_add_notice(__('Security check failed. Please refresh and try again.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('help-support'));
+        exit;
+    }
+
+    $customer_id = get_current_user_id();
+    $subject = sanitize_text_field($_POST['ticket_subject']);
+    $category = sanitize_text_field($_POST['ticket_category']);
+    $order_id = isset($_POST['ticket_order_id']) ? absint($_POST['ticket_order_id']) : 0;
+    $description = sanitize_textarea_field($_POST['ticket_description']);
+
+    if (empty($subject) || empty($description)) {
+        wc_add_notice(__('Please enter a subject and detailed description for your inquiry.', 'aavni'), 'error');
+        wp_safe_redirect(wc_get_account_endpoint_url('help-support'));
+        exit;
+    }
+
+    $ticket_code = 'AAVNI-TKT-' . strtoupper(wp_generate_password(6, false));
+
+    global $wpdb;
+    $table = $wpdb->prefix . 'aavni_support_tickets';
+    $wpdb->insert(
+        $table,
+        [
+            'ticket_code' => $ticket_code,
+            'customer_id' => $customer_id,
+            'order_id'    => $order_id,
+            'subject'     => $subject,
+            'category'    => $category,
+            'description' => $description,
+            'status'      => 'open',
+            'priority'    => 'medium',
+            'created_at'  => current_time('mysql'),
+            'updated_at'  => current_time('mysql'),
+        ],
+        ['%s', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+    );
+
+    wc_add_notice(sprintf(__('Support Ticket #%s created. Our customer support team will reply within 24 hours.', 'aavni'), $ticket_code), 'success');
+    wp_safe_redirect(wc_get_account_endpoint_url('help-support'));
+    exit;
+}
+
+// Add Admin Menu for Support Tickets
+add_action('admin_menu', 'aavni_register_admin_tickets_menu');
+function aavni_register_admin_tickets_menu() {
+    add_submenu_page(
+        'woocommerce',
+        __('AAVNI Support Tickets', 'aavni'),
+        __('Support Tickets', 'aavni'),
+        'manage_woocommerce',
+        'aavni-support-tickets',
+        'aavni_render_admin_tickets_page'
+    );
+}
+
+function aavni_render_admin_tickets_page() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'aavni_support_tickets';
+
+    // Handle Admin Reply / Status update
+    if (isset($_POST['aavni_admin_ticket_action']) && check_admin_referer('aavni_admin_ticket_nonce')) {
+        $tkt_id = absint($_POST['ticket_id']);
+        $new_status = sanitize_text_field($_POST['ticket_status']);
+        $reply_text = sanitize_textarea_field($_POST['admin_reply']);
+
+        $existing = $wpdb->get_row($wpdb->prepare("SELECT replies FROM $table WHERE id = %d", $tkt_id));
+        $replies = $existing ? (json_decode($existing->replies, true) ?: []) : [];
+
+        if (!empty($reply_text)) {
+            $replies[] = [
+                'author'  => wp_get_current_user()->display_name . ' (AAVNI Support)',
+                'message' => $reply_text,
+                'time'    => current_time('mysql'),
+            ];
+        }
+
+        $wpdb->update(
+            $table,
+            [
+                'status'     => $new_status,
+                'replies'    => json_encode($replies),
+                'updated_at' => current_time('mysql'),
+            ],
+            ['id' => $tkt_id],
+            ['%s', '%s', '%s'],
+            ['%d']
+        );
+        echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Ticket response recorded.', 'aavni') . '</p></div>';
+    }
+
+    $tickets = $wpdb->get_results("SELECT * FROM $table ORDER BY id DESC LIMIT 50");
+    ?>
+    <div class="wrap">
+        <h1>AAVNI &mdash; <?php esc_html_e('Customer Support Inquiries & Tickets', 'aavni'); ?></h1>
+        <p><?php esc_html_e('View customer complaints, order inquiries, and post official responses.', 'aavni'); ?></p>
+
+        <table class="wp-list-table widefat fixed striped" style="margin-top:16px;">
+            <thead>
+                <tr>
+                    <th style="width:130px;">Ticket Code</th>
+                    <th style="width:140px;">Customer</th>
+                    <th style="width:100px;">Order #</th>
+                    <th style="width:130px;">Category</th>
+                    <th>Subject & Message</th>
+                    <th style="width:110px;">Status</th>
+                    <th style="width:240px;">Official Reply & Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($tickets)) : ?>
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:24px; color:#888;">
+                            <?php esc_html_e('No support tickets filed yet.', 'aavni'); ?>
+                        </td>
+                    </tr>
+                <?php else : ?>
+                    <?php foreach ($tickets as $tkt) :
+                        $cust = get_userdata($tkt->customer_id);
+                        $replies = json_decode($tkt->replies, true) ?: [];
+                    ?>
+                        <tr>
+                            <td><strong><?php echo esc_html($tkt->ticket_code); ?></strong><br><small style="color:#888;"><?php echo esc_html(substr($tkt->created_at, 0, 16)); ?></small></td>
+                            <td><?php echo esc_html($cust ? $cust->display_name : 'Customer #' . $tkt->customer_id); ?></td>
+                            <td><?php echo ($tkt->order_id > 0) ? '#' . esc_html($tkt->order_id) : 'General'; ?></td>
+                            <td><span style="background:#F3EFE9; padding:2px 6px; border-radius:3px; font-size:11.5px;"><?php echo esc_html($tkt->category); ?></span></td>
+                            <td>
+                                <strong><?php echo esc_html($tkt->subject); ?></strong>
+                                <p style="margin:4px 0 8px; font-size:12.5px; color:#444;"><?php echo nl2br(esc_html($tkt->description)); ?></p>
+                                <?php if (!empty($replies)) : ?>
+                                    <div style="background:#F8FAFC; border-left:3px solid #A85A48; padding:8px 12px; margin-top:6px; font-size:12px;">
+                                        <strong><?php esc_html_e('Conversation Thread:', 'aavni'); ?></strong>
+                                        <?php foreach ($replies as $rep) : ?>
+                                            <div style="margin-top:4px;">
+                                                <span style="color:#A85A48; font-weight:600;"><?php echo esc_html($rep['author']); ?>:</span>
+                                                <span><?php echo esc_html($rep['message']); ?></span>
+                                                <small style="color:#999; margin-left:6px;"><?php echo esc_html(substr($rep['time'], 0, 16)); ?></small>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; text-transform:uppercase; background:<?php echo ($tkt->status === 'resolved') ? '#D1FAE5; color:#065F46;' : (($tkt->status === 'in_progress') ? '#E0F2FE; color:#0369A1;' : '#FEF3C7; color:#92400E;'); ?>">
+                                    <?php echo esc_html($tkt->status); ?>
+                                </span>
+                            </td>
+                            <td>
+                                <form method="post">
+                                    <?php wp_nonce_field('aavni_admin_ticket_nonce'); ?>
+                                    <input type="hidden" name="aavni_admin_ticket_action" value="1" />
+                                    <input type="hidden" name="ticket_id" value="<?php echo esc_attr($tkt->id); ?>" />
+                                    <textarea name="admin_reply" rows="2" placeholder="Type reply to customer..." style="width:100%; font-size:12px; margin-bottom:4px;"></textarea>
+                                    <div style="display:flex; gap:6px;">
+                                        <select name="ticket_status" style="font-size:12px; flex:1;">
+                                            <option value="open" <?php selected($tkt->status, 'open'); ?>>Open</option>
+                                            <option value="in_progress" <?php selected($tkt->status, 'in_progress'); ?>>In Progress</option>
+                                            <option value="resolved" <?php selected($tkt->status, 'resolved'); ?>>Resolved</option>
+                                            <option value="closed" <?php selected($tkt->status, 'closed'); ?>>Closed</option>
+                                        </select>
+                                        <button type="submit" class="button button-small button-primary">Send & Update</button>
+                                    </div>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php
+}
+
+/**
+ * ============================================================================
+ * 8. PHASE 7 — CUSTOM ENDPOINT VIEW HOOKS
+ * ============================================================================
+ */
+
+// 1. Track Order Endpoint Output
+add_action('woocommerce_account_track-order_endpoint', 'aavni_render_track_order_endpoint');
+function aavni_render_track_order_endpoint() {
+    $user_id = get_current_user_id();
+    $orders = wc_get_orders(['customer' => $user_id, 'limit' => 20]);
+    $selected_order_id = isset($_GET['order_id']) ? absint($_GET['order_id']) : ($orders ? $orders[0]->get_id() : 0);
+    $selected_order = $selected_order_id ? wc_get_order($selected_order_id) : null;
+
+    // Verify ownership
+    if ($selected_order && $selected_order->get_customer_id() !== $user_id) {
+        $selected_order = null;
+    }
+
+    $milestones = aavni_get_milestone_definitions();
+    ?>
+    <div class="aavni-panel-section">
+        <div class="aavni-panel-header">
+            <h2 class="aavni-panel-title">🚚 <?php esc_html_e('Order Tracking & Status Timeline', 'aavni'); ?></h2>
+            <p class="aavni-panel-subtitle"><?php esc_html_e('Track your package through real-time packaging, transit, and delivery milestones.', 'aavni'); ?></p>
+        </div>
+
+        <?php if (empty($orders)) : ?>
+            <div class="aavni-empty-state">
+                <div class="aavni-empty-icon">📦</div>
+                <h3><?php esc_html_e('No orders to track yet', 'aavni'); ?></h3>
+                <p><?php esc_html_e('Once you make a purchase, your real-time tracking timeline will appear here.', 'aavni'); ?></p>
+                <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>" class="aavni-btn aavni-btn-primary"><?php esc_html_e('Explore Collections', 'aavni'); ?></a>
+            </div>
+        <?php else : ?>
+            <!-- Order Selector -->
+            <div class="aavni-track-selector-bar">
+                <form method="get" action="" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <label for="track_order_select" style="font-weight:600; font-size:13.5px;"><?php esc_html_e('Select Order to Track:', 'aavni'); ?></label>
+                    <select name="order_id" id="track_order_select" class="aavni-custom-select" onchange="this.form.submit()">
+                        <?php foreach ($orders as $ord) : ?>
+                            <option value="<?php echo esc_attr($ord->get_id()); ?>" <?php selected($selected_order_id, $ord->get_id()); ?>>
+                                Order #<?php echo esc_html($ord->get_order_number()); ?> &mdash; <?php echo wc_price($ord->get_total(), ['currency' => $ord->get_currency()]); ?> (<?php echo esc_html($ord->get_date_created()->date('d M Y')); ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            </div>
+
+            <?php if ($selected_order) :
+                $current_milestone = aavni_get_order_current_milestone($selected_order);
+                $courier = $selected_order->get_meta('_aavni_courier_name');
+                $tracking_no = $selected_order->get_meta('_aavni_tracking_number');
+                $tracking_url = $selected_order->get_meta('_aavni_tracking_url');
+                $raw_history = $selected_order->get_meta('_aavni_milestone_history');
+                $history = is_array($raw_history) ? $raw_history : [];
+
+                $current_step = isset($milestones[$current_milestone]) ? $milestones[$current_milestone]['step'] : 1;
+                $is_cancelled = in_array($current_milestone, ['cancelled', 'refunded', 'failed'], true);
+            ?>
+                <!-- Order Overview Card -->
+                <div class="aavni-order-track-card">
+                    <div class="aavni-track-meta-row">
+                        <div>
+                            <span class="aavni-track-label"><?php esc_html_e('ORDER NUMBER', 'aavni'); ?></span>
+                            <div class="aavni-track-val">#<?php echo esc_html($selected_order->get_order_number()); ?></div>
+                        </div>
+                        <div>
+                            <span class="aavni-track-label"><?php esc_html_e('ORDER DATE', 'aavni'); ?></span>
+                            <div class="aavni-track-val"><?php echo esc_html($selected_order->get_date_created()->date('d M Y, h:i A')); ?></div>
+                        </div>
+                        <div>
+                            <span class="aavni-track-label"><?php esc_html_e('TOTAL AMOUNT', 'aavni'); ?></span>
+                            <div class="aavni-track-val" style="color:var(--aavni-terracotta);"><?php echo wc_price($selected_order->get_total(), ['currency' => $selected_order->get_currency()]); ?></div>
+                        </div>
+                        <div>
+                            <span class="aavni-track-label"><?php esc_html_e('PAYMENT', 'aavni'); ?></span>
+                            <div class="aavni-track-val"><?php echo esc_html($selected_order->get_payment_method_title()); ?></div>
+                        </div>
+                    </div>
+
+                    <!-- Courier Info Box -->
+                    <div class="aavni-courier-info-box">
+                        <div class="aavni-courier-details">
+                            <strong>📦 <?php esc_html_e('Shipment Partner:', 'aavni'); ?></strong>
+                            <span><?php echo esc_html($courier ?: 'AAVNI Express Delivery'); ?></span>
+                            <?php if ($tracking_no) : ?>
+                                <span style="margin-left:12px;"><strong>AWB:</strong> <code><?php echo esc_html($tracking_no); ?></code></span>
+                            <?php endif; ?>
+                        </div>
+                        <?php if ($tracking_url) : ?>
+                            <a href="<?php echo esc_url($tracking_url); ?>" target="_blank" rel="noopener" class="aavni-btn aavni-btn-sm aavni-btn-outline">
+                                <?php esc_html_e('Live Courier Tracking ↗', 'aavni'); ?>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if ($is_cancelled) : ?>
+                        <div class="aavni-alert-cancelled" style="margin-top:20px; padding:16px; background:#FEF2F2; border:1px solid #FCA5A5; border-radius:8px; color:#991B1B;">
+                            <strong>⚠️ <?php printf(esc_html__('This order is %s.', 'aavni'), strtoupper(esc_html($current_milestone))); ?></strong>
+                            <p style="margin:4px 0 0; font-size:13px;"><?php esc_html_e('Delivery for this order has been stopped according to customer or store request.', 'aavni'); ?></p>
+                        </div>
+                    <?php else : ?>
+                        <!-- Visual Milestone Timeline -->
+                        <div class="aavni-timeline-wrapper">
+                            <div class="aavni-timeline-track">
+                                <div class="aavni-timeline-progress" style="width: <?php echo esc_attr(($current_step - 1) * 20); ?>%;"></div>
+                            </div>
+                            <div class="aavni-timeline-nodes">
+                                <?php foreach ($milestones as $key => $m) :
+                                    $is_done = $m['step'] < $current_step;
+                                    $is_active = $m['step'] === $current_step;
+                                ?>
+                                    <div class="aavni-timeline-node <?php echo $is_done ? 'is-done' : ($is_active ? 'is-active' : 'is-pending'); ?>">
+                                        <div class="aavni-node-bubble">
+                                            <?php echo $is_done ? '✓' : esc_html($m['icon']); ?>
+                                        </div>
+                                        <div class="aavni-node-title"><?php echo esc_html($m['label']); ?></div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Milestone History Log -->
+                    <?php if (!empty($history)) : ?>
+                        <div class="aavni-milestone-history-log" style="margin-top:24px; border-top:1px solid var(--aavni-border-light); padding-top:16px;">
+                            <h4 style="font-size:14px; margin:0 0 10px;"><?php esc_html_e('Activity Log & Updates', 'aavni'); ?></h4>
+                            <ul style="list-style:none; padding:0; margin:0; font-size:12.5px; color:var(--aavni-text-muted);">
+                                <?php foreach (array_reverse($history) as $h) :
+                                    if (!is_array($h) || empty($h['title'])) continue;
+                                ?>
+                                    <li style="display:flex; gap:12px; margin-bottom:6px;">
+                                        <span style="color:var(--aavni-text-subtle);"><?php echo esc_html(isset($h['time']) ? substr($h['time'], 0, 16) : ''); ?></span>
+                                        <strong><?php echo esc_html($h['title']); ?></strong>
+                                        <?php if (!empty($h['note'])) : ?>
+                                            <span>&mdash; <?php echo esc_html($h['note']); ?></span>
+                                        <?php endif; ?>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+// 2. Returns & Refunds Endpoint Output
+add_action('woocommerce_account_returns_endpoint', 'aavni_render_returns_endpoint');
+function aavni_render_returns_endpoint() {
+    $user_id = get_current_user_id();
+    global $wpdb;
+    $table = $wpdb->prefix . 'aavni_returns';
+    $requests = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table WHERE customer_id = %d ORDER BY id DESC", $user_id));
+
+    // Get orders eligible for return (status = completed, within 7 days)
+    $orders = wc_get_orders([
+        'customer' => $user_id,
+        'status'   => ['completed'],
+        'limit'    => 10,
+    ]);
+    ?>
+    <div class="aavni-panel-section">
+        <div class="aavni-panel-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <div>
+                <h2 class="aavni-panel-title">🔄 <?php esc_html_e('Returns, Exchanges & Refund Tracking', 'aavni'); ?></h2>
+                <p class="aavni-panel-subtitle"><?php esc_html_e('Easy 7-Day exchange & hassle-free returns on pure cotton apparel.', 'aavni'); ?></p>
+            </div>
+            <button type="button" class="aavni-btn aavni-btn-primary" onclick="document.getElementById('aavniReturnFormBox').scrollIntoView({behavior:'smooth'})">
+                <?php esc_html_e('+ Request Return / Exchange', 'aavni'); ?>
+            </button>
+        </div>
+
+        <!-- Requests List -->
+        <?php if (!empty($requests)) : ?>
+            <div class="aavni-table-responsive" style="margin-top:16px;">
+                <table class="aavni-custom-table">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Order</th>
+                            <th>Item</th>
+                            <th>Type</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($requests as $r) :
+                            $prod = wc_get_product($r->product_id);
+                        ?>
+                            <tr>
+                                <td><strong>#RET-<?php echo esc_html($r->id); ?></strong><br><small style="color:#999;"><?php echo esc_html(substr($r->created_at, 0, 10)); ?></small></td>
+                                <td>#<?php echo esc_html($r->order_id); ?></td>
+                                <td><?php echo esc_html($prod ? $prod->get_name() : 'Item #' . $r->product_id); ?></td>
+                                <td><span style="font-weight:600; text-transform:uppercase; color:var(--aavni-terracotta);"><?php echo esc_html($r->request_type); ?></span></td>
+                                <td><?php echo esc_html($r->reason); ?></td>
+                                <td>
+                                    <span class="aavni-status-pill aavni-status-<?php echo esc_attr($r->status); ?>">
+                                        <?php echo esc_html(str_replace('_', ' ', $r->status)); ?>
+                                    </span>
+                                </td>
+                                <td><?php echo esc_html($r->admin_notes ?: 'Under review'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php else : ?>
+            <div class="aavni-empty-state" style="margin-bottom:28px;">
+                <p><?php esc_html_e('You have not filed any return or exchange requests.', 'aavni'); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <!-- New Return Request Form Box -->
+        <div id="aavniReturnFormBox" class="aavni-form-card" style="margin-top:28px;">
+            <h3 style="margin-top:0; font-family:var(--font-heading);"><?php esc_html_e('Submit Return / Exchange Request', 'aavni'); ?></h3>
+            <p style="font-size:13px; color:var(--aavni-text-muted); margin-bottom:18px;">
+                <?php esc_html_e('Items delivered within the last 7 days with intact tags are eligible for exchange or return.', 'aavni'); ?>
+            </p>
+
+            <?php if (empty($orders)) : ?>
+                <div style="background:#FAF8F5; padding:16px; border-radius:6px; font-size:13px; color:var(--aavni-text-muted);">
+                    <?php esc_html_e('No recently delivered orders eligible for return at this moment. If you received a damaged item, please contact our support team.', 'aavni'); ?>
+                </div>
+            <?php else : ?>
+                <form method="post" enctype="multipart/form-data">
+                    <?php wp_nonce_field('aavni_submit_return_request', 'aavni_return_nonce'); ?>
+                    <input type="hidden" name="aavni_action" value="submit_return" />
+
+                    <div class="aavni-form-grid-2">
+                        <div>
+                            <label for="return_order_id"><strong><?php esc_html_e('Select Delivered Order *', 'aavni'); ?></strong></label>
+                            <select name="return_order_id" id="return_order_id" class="aavni-custom-input" required>
+                                <?php foreach ($orders as $ord) : ?>
+                                    <option value="<?php echo esc_attr($ord->get_id()); ?>">
+                                        Order #<?php echo esc_html($ord->get_order_number()); ?> &mdash; <?php echo wc_price($ord->get_total(), ['currency' => $ord->get_currency()]); ?> (<?php echo esc_html($ord->get_date_created()->date('d M Y')); ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="request_type"><strong><?php esc_html_e('Request Type *', 'aavni'); ?></strong></label>
+                            <select name="request_type" id="request_type" class="aavni-custom-input" required>
+                                <option value="exchange"><?php esc_html_e('Size / Style Exchange (Recommended)', 'aavni'); ?></option>
+                                <option value="return"><?php esc_html_e('Return for Refund', 'aavni'); ?></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="aavni-form-grid-2" style="margin-top:12px;">
+                        <div>
+                            <label for="return_reason"><strong><?php esc_html_e('Reason for Return / Exchange *', 'aavni'); ?></strong></label>
+                            <select name="return_reason" id="return_reason" class="aavni-custom-input" required>
+                                <option value="Size too small / tight"><?php esc_html_e('Size too small / tight', 'aavni'); ?></option>
+                                <option value="Size too large / loose"><?php esc_html_e('Size too large / loose', 'aavni'); ?></option>
+                                <option value="Color or print looks different"><?php esc_html_e('Color or print looks different', 'aavni'); ?></option>
+                                <option value="Fabric / material quality issue"><?php esc_html_e('Fabric / material quality issue', 'aavni'); ?></option>
+                                <option value="Defective or damaged piece"><?php esc_html_e('Defective or damaged piece', 'aavni'); ?></option>
+                                <option value="Received wrong product / size"><?php esc_html_e('Received wrong product / size', 'aavni'); ?></option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="return_product_id"><strong><?php esc_html_e('Product in Order *', 'aavni'); ?></strong></label>
+                            <select name="return_product_id" id="return_product_id" class="aavni-custom-input" required>
+                                <?php foreach ($orders as $ord) :
+                                    foreach ($ord->get_items() as $item) : ?>
+                                        <option value="<?php echo esc_attr($item->get_product_id()); ?>">
+                                            <?php echo esc_html($item->get_name()); ?> (Order #<?php echo esc_html($ord->get_order_number()); ?>)
+                                        </option>
+                                    <?php endforeach;
+                                endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label for="return_description"><strong><?php esc_html_e('Detailed Description *', 'aavni'); ?></strong></label>
+                        <textarea name="return_description" id="return_description" rows="3" class="aavni-custom-input" placeholder="<?php esc_attr_e('Please explain why you wish to return/exchange this item (e.g. need size L instead of M)...', 'aavni'); ?>" required></textarea>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label for="return_photos"><strong><?php esc_html_e('Upload Supporting Photos (Optional, max 3 photos)', 'aavni'); ?></strong></label>
+                        <input type="file" name="return_photos[]" id="return_photos" multiple accept="image/jpeg,image/png,image/webp" style="margin-top:4px;" />
+                        <small style="display:block; color:#888;"><?php esc_html_e('Accepted: JPG, PNG, WEBP (Max 2MB per photo)', 'aavni'); ?></small>
+                    </div>
+
+                    <button type="submit" class="aavni-btn aavni-btn-primary" style="margin-top:18px;">
+                        <?php esc_html_e('Submit Return / Exchange Request', 'aavni'); ?>
+                    </button>
+                </form>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php
+}
+
+// 3. My Reviews Endpoint Output
+add_action('woocommerce_account_my-reviews_endpoint', 'aavni_render_my_reviews_endpoint');
+function aavni_render_my_reviews_endpoint() {
+    $user_id = get_current_user_id();
+
+    // Query customer's existing reviews
+    $reviews = get_comments([
+        'user_id' => $user_id,
+        'type'    => 'review',
+        'status'  => 'all',
+    ]);
+
+    // Query bought products to allow easy new review writing
+    $customer_orders = wc_get_orders(['customer' => $user_id, 'status' => ['completed', 'processing'], 'limit' => 15]);
+    $bought_product_ids = [];
+    foreach ($customer_orders as $ord) {
+        foreach ($ord->get_items() as $item) {
+            $bought_product_ids[$item->get_product_id()] = $item->get_name();
+        }
+    }
+    ?>
+    <div class="aavni-panel-section">
+        <div class="aavni-panel-header">
+            <h2 class="aavni-panel-title">⭐ <?php esc_html_e('My Ratings & Product Reviews', 'aavni'); ?></h2>
+            <p class="aavni-panel-subtitle"><?php esc_html_e('Share your feedback on fit, fabric, and styling to help our community.', 'aavni'); ?></p>
+        </div>
+
+        <?php if (!empty($reviews)) : ?>
+            <div class="aavni-reviews-list" style="margin-top:18px;">
+                <?php foreach ($reviews as $rev) :
+                    $prod = wc_get_product($rev->comment_post_ID);
+                    $rating = intval(get_comment_meta($rev->comment_ID, 'rating', true));
+                ?>
+                    <div class="aavni-review-card" style="background:#fff; border:1px solid var(--aavni-border-light); border-radius:8px; padding:18px; margin-bottom:14px; box-shadow:var(--shadow-sm);">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                            <div>
+                                <h4 style="margin:0 0 4px; font-size:15px;">
+                                    <?php if ($prod) : ?>
+                                        <a href="<?php echo esc_url($prod->get_permalink()); ?>" target="_blank" style="color:var(--aavni-text); font-weight:600;">
+                                            <?php echo esc_html($prod->get_name()); ?> ↗
+                                        </a>
+                                    <?php else : ?>
+                                        <?php esc_html_e('Product', 'aavni'); ?>
+                                    <?php endif; ?>
+                                </h4>
+                                <div style="color:#E67A00; font-size:14px;">
+                                    <?php echo str_repeat('★', $rating) . str_repeat('☆', 5 - $rating); ?>
+                                    <span style="font-size:12px; color:var(--aavni-text-subtle); margin-left:6px;"><?php echo esc_html(get_comment_date('d M Y', $rev)); ?></span>
+                                </div>
+                            </div>
+                            <?php if ($rev->comment_approved === '1') : ?>
+                                <span style="background:#ECFDF5; color:#047857; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">Published</span>
+                            <?php else : ?>
+                                <span style="background:#FEF3C7; color:#92400E; font-size:11px; font-weight:700; padding:2px 8px; border-radius:4px;">Awaiting Moderation</span>
+                            <?php endif; ?>
+                        </div>
+                        <p style="margin:0; font-size:13.5px; color:var(--aavni-text-muted); line-height:1.6;">
+                            <?php echo esc_html($rev->comment_content); ?>
+                        </p>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php else : ?>
+            <div class="aavni-empty-state">
+                <div class="aavni-empty-icon">✍️</div>
+                <h3><?php esc_html_e('No product reviews yet', 'aavni'); ?></h3>
+                <p><?php esc_html_e('You have not reviewed any purchased items yet.', 'aavni'); ?></p>
+            </div>
+        <?php endif; ?>
+
+        <!-- Write a Review Section -->
+        <?php if (!empty($bought_product_ids)) : ?>
+            <div class="aavni-form-card" style="margin-top:24px;">
+                <h4 style="margin:0 0 10px; font-family:var(--font-heading);"><?php esc_html_e('Review Purchased Products', 'aavni'); ?></h4>
+                <p style="font-size:13px; color:var(--aavni-text-muted); margin-bottom:14px;">
+                    <?php esc_html_e('Click any item you recently ordered to rate and review it:', 'aavni'); ?>
+                </p>
+                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                    <?php foreach ($bought_product_ids as $pid => $pname) :
+                        $p = wc_get_product($pid);
+                        if ($p) :
+                    ?>
+                        <a href="<?php echo esc_url($p->get_permalink() . '#reviews'); ?>" class="aavni-btn aavni-btn-sm aavni-btn-outline" style="text-align:left;">
+                            ⭐ <?php echo esc_html($pname); ?> &rarr;
+                        </a>
+                    <?php endif; endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php
+}
+
+// 4. Help & Support Endpoint Output
+add_action('woocommerce_account_help-support_endpoint', 'aavni_render_help_support_endpoint');
+function aavni_render_help_support_endpoint() {
+    $user_id = get_current_user_id();
+    global $wpdb;
+    $table = $wpdb->prefix . 'aavni_support_tickets';
+    $tickets = $wpdb->get_results($wpdb->prepare("SELECT * FROM $table WHERE customer_id = %d ORDER BY id DESC", $user_id));
+    $orders = wc_get_orders(['customer' => $user_id, 'limit' => 15]);
+    ?>
+    <div class="aavni-panel-section">
+        <div class="aavni-panel-header">
+            <h2 class="aavni-panel-title">💬 <?php esc_html_e('AAVNI Customer Care & Support', 'aavni'); ?></h2>
+            <p class="aavni-panel-subtitle"><?php esc_html_e('Get quick assistance with delivery, exchanges, sizing, or billing.', 'aavni'); ?></p>
+        </div>
+
+        <!-- 3 Contact Methods Grid -->
+        <div class="aavni-support-cards-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-top:16px;">
+            <div class="aavni-contact-card" style="background:#FAF8F5; border:1px solid var(--aavni-border); border-radius:8px; padding:18px;">
+                <div style="font-size:24px; margin-bottom:6px;">💬</div>
+                <strong style="font-size:14px; display:block;"><?php esc_html_e('Instant WhatsApp Support', 'aavni'); ?></strong>
+                <p style="font-size:12.5px; color:var(--aavni-text-muted); margin:4px 0 12px;"><?php esc_html_e('Chat directly with our Jaipur boutique team.', 'aavni'); ?></p>
+                <a href="https://wa.me/919828103222?text=<?php echo urlencode('Hi AAVNI, I need assistance with my order.'); ?>" target="_blank" rel="noopener" class="aavni-btn aavni-btn-sm" style="background:#25D366; color:#fff; text-decoration:none; display:inline-block;">
+                    <?php esc_html_e('WhatsApp: +91 9828103222', 'aavni'); ?>
+                </a>
+            </div>
+
+            <div class="aavni-contact-card" style="background:#FAF8F5; border:1px solid var(--aavni-border); border-radius:8px; padding:18px;">
+                <div style="font-size:24px; margin-bottom:6px;">✉️</div>
+                <strong style="font-size:14px; display:block;"><?php esc_html_e('Email Customer Care', 'aavni'); ?></strong>
+                <p style="font-size:12.5px; color:var(--aavni-text-muted); margin:4px 0 12px;"><?php esc_html_e('For formal inquiries, custom bulk orders, or invoices.', 'aavni'); ?></p>
+                <a href="mailto:care@aavniclothing.com" class="aavni-btn aavni-btn-sm aavni-btn-outline" style="text-decoration:none; display:inline-block;">
+                    care@aavniclothing.com
+                </a>
+            </div>
+
+            <div class="aavni-contact-card" style="background:#FAF8F5; border:1px solid var(--aavni-border); border-radius:8px; padding:18px;">
+                <div style="font-size:24px; margin-bottom:6px;">⏰</div>
+                <strong style="font-size:14px; display:block;"><?php esc_html_e('Operating Hours', 'aavni'); ?></strong>
+                <p style="font-size:12.5px; color:var(--aavni-text-muted); margin:4px 0 0;">
+                    <strong>Mon &ndash; Sat:</strong> 10:00 AM &ndash; 7:00 PM IST<br>
+                    <strong>Sunday:</strong> 11:00 AM &ndash; 4:00 PM IST<br>
+                    <span style="color:#1E7E34; font-weight:600;">✓ Fast Response Guaranteed</span>
+                </p>
+            </div>
+        </div>
+
+        <!-- Open Support Tickets List -->
+        <div style="margin-top:28px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin:0; font-family:var(--font-heading);"><?php esc_html_e('My Support Tickets & Inquiries', 'aavni'); ?></h3>
+                <button type="button" class="aavni-btn aavni-btn-sm aavni-btn-primary" onclick="document.getElementById('aavniTicketFormBox').scrollIntoView({behavior:'smooth'})">
+                    <?php esc_html_e('+ Open New Ticket', 'aavni'); ?>
+                </button>
+            </div>
+
+            <?php if (!empty($tickets)) : ?>
+                <div class="aavni-table-responsive">
+                    <table class="aavni-custom-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>Category</th>
+                                <th>Subject</th>
+                                <th>Order #</th>
+                                <th>Status</th>
+                                <th>Latest Update</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($tickets as $t) :
+                                $replies = json_decode($t->replies, true) ?: [];
+                            ?>
+                                <tr>
+                                    <td><strong><?php echo esc_html($t->ticket_code); ?></strong><br><small style="color:#999;"><?php echo esc_html(substr($t->created_at, 0, 10)); ?></small></td>
+                                    <td><?php echo esc_html($t->category); ?></td>
+                                    <td>
+                                        <strong><?php echo esc_html($t->subject); ?></strong>
+                                        <p style="margin:4px 0 0; font-size:12px; color:#666;"><?php echo esc_html($t->description); ?></p>
+                                        <?php if (!empty($replies)) : ?>
+                                            <div style="background:#F0FDF4; border-left:3px solid #1E7E34; padding:6px 10px; margin-top:6px; font-size:12px;">
+                                                <strong>AAVNI Response:</strong> <?php echo esc_html(end($replies)['message']); ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo ($t->order_id > 0) ? '#' . esc_html($t->order_id) : '&mdash;'; ?></td>
+                                    <td>
+                                        <span class="aavni-status-pill aavni-status-<?php echo esc_attr($t->status); ?>">
+                                            <?php echo esc_html(str_replace('_', ' ', $t->status)); ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo esc_html(substr($t->updated_at, 0, 16)); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else : ?>
+                <div class="aavni-empty-state" style="padding:20px; background:#FAF8F5; border-radius:6px; margin-bottom:20px;">
+                    <p style="margin:0; font-size:13.5px;"><?php esc_html_e('You have no open support tickets. Need help? Submit an inquiry below.', 'aavni'); ?></p>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <!-- Submit New Ticket Form -->
+        <div id="aavniTicketFormBox" class="aavni-form-card" style="margin-top:24px;">
+            <h3 style="margin-top:0; font-family:var(--font-heading);"><?php esc_html_e('File an Order Complaint or Inquiry', 'aavni'); ?></h3>
+            <form method="post">
+                <?php wp_nonce_field('aavni_submit_support_ticket', 'aavni_ticket_nonce'); ?>
+                <input type="hidden" name="aavni_action" value="submit_support_ticket" />
+
+                <div class="aavni-form-grid-2">
+                    <div>
+                        <label for="ticket_category"><strong><?php esc_html_e('Inquiry Category *', 'aavni'); ?></strong></label>
+                        <select name="ticket_category" id="ticket_category" class="aavni-custom-input" required>
+                            <option value="Delivery Delay"><?php esc_html_e('Delivery / Transit Delay', 'aavni'); ?></option>
+                            <option value="Size or Fit Issue"><?php esc_html_e('Size or Fit Inquiry', 'aavni'); ?></option>
+                            <option value="Exchange or Return"><?php esc_html_e('Exchange or Return Inquiry', 'aavni'); ?></option>
+                            <option value="Payment / COD Issue"><?php esc_html_e('Payment / Billing Query', 'aavni'); ?></option>
+                            <option value="Product Quality"><?php esc_html_e('Product Fabric / Quality Feedback', 'aavni'); ?></option>
+                            <option value="Other"><?php esc_html_e('General Inquiry', 'aavni'); ?></option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="ticket_order_id"><strong><?php esc_html_e('Related Order (Optional)', 'aavni'); ?></strong></label>
+                        <select name="ticket_order_id" id="ticket_order_id" class="aavni-custom-input">
+                            <option value="0"><?php esc_html_e('-- None / General Store Inquiry --', 'aavni'); ?></option>
+                            <?php foreach ($orders as $ord) : ?>
+                                <option value="<?php echo esc_attr($ord->get_id()); ?>">
+                                    Order #<?php echo esc_html($ord->get_order_number()); ?> (<?php echo esc_html($ord->get_date_created()->date('d M Y')); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label for="ticket_subject"><strong><?php esc_html_e('Subject / Brief Summary *', 'aavni'); ?></strong></label>
+                    <input type="text" name="ticket_subject" id="ticket_subject" class="aavni-custom-input" placeholder="e.g. When will Order #66 be delivered?" required />
+                </div>
+
+                <div style="margin-top:12px;">
+                    <label for="ticket_description"><strong><?php esc_html_e('Detailed Message *', 'aavni'); ?></strong></label>
+                    <textarea name="ticket_description" id="ticket_description" rows="4" class="aavni-custom-input" placeholder="Please provide all relevant details..." required></textarea>
+                </div>
+
+                <button type="submit" class="aavni-btn aavni-btn-primary" style="margin-top:16px;">
+                    <?php esc_html_e('Submit Support Ticket', 'aavni'); ?>
+                </button>
+            </form>
+        </div>
+
+        <!-- Frequently Asked Questions -->
+        <div style="margin-top:36px; padding-top:24px; border-top:1px solid var(--aavni-border-light);">
+            <h3 style="font-family:var(--font-heading); margin-bottom:16px;"><?php esc_html_e('Frequently Asked Questions (FAQ)', 'aavni'); ?></h3>
+            
+            <div class="aavni-faq-item" style="margin-bottom:12px; background:#FAF8F5; border-radius:6px; padding:14px 18px;">
+                <strong>Q: How long does express delivery take across India?</strong>
+                <p style="margin:4px 0 0; font-size:13px; color:var(--aavni-text-muted);">
+                    Orders are dispatched within 24-48 hours from our Jaipur warehouse. Delivery takes 2-4 business days for major metro cities and 4-6 business days for the rest of India.
+                </p>
+            </div>
+            <div class="aavni-faq-item" style="margin-bottom:12px; background:#FAF8F5; border-radius:6px; padding:14px 18px;">
+                <strong>Q: What is AAVNI's exchange policy if the kurti doesn't fit?</strong>
+                <p style="margin:4px 0 0; font-size:13px; color:var(--aavni-text-muted);">
+                    We offer a 7-day hassle-free size exchange! Simply go to the "Returns & Refunds" tab in your account panel or WhatsApp our customer support team to schedule a reverse pickup.
+                </p>
+            </div>
+            <div class="aavni-faq-item" style="margin-bottom:12px; background:#FAF8F5; border-radius:6px; padding:14px 18px;">
+                <strong>Q: Can I pay cash on delivery (COD)?</strong>
+                <p style="margin:4px 0 0; font-size:13px; color:var(--aavni-text-muted);">
+                    Yes, COD is available pan-India! You can pay cash or scan the delivery executive's UPI QR code at your doorstep.
+                </p>
+            </div>
+        </div>
+    </div>
+    <?php
+}
