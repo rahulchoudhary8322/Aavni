@@ -127,9 +127,16 @@
                     $cell.html(originalContent);
                     alert('Error: ' + ((res && res.data && res.data.message) ? res.data.message : 'Could not update milestone.'));
                 }
-            }).fail(function() {
+            }).fail(function(xhr) {
                 $cell.html(originalContent);
-                alert('Server error. Please try again.');
+                var msg = 'Server error. Please try again.';
+                if (xhr && xhr.responseText && xhr.responseText !== '-1' && xhr.responseText !== '0') {
+                    try {
+                        var json = JSON.parse(xhr.responseText);
+                        if (json && json.data && json.data.message) msg = json.data.message;
+                    } catch(e) {}
+                }
+                alert(msg);
             });
         }
 

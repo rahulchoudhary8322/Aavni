@@ -199,6 +199,13 @@ if ($can_access) {
     <!-- Enqueue WordPress Head (Media Uploader, jQuery, Admin CSS) -->
     <?php wp_head(); ?>
 
+    <script>
+        window.aavniAdminParams = window.aavniAdminParams || {};
+        window.aavniAdminParams.ajax_url = <?php echo json_encode(admin_url('admin-ajax.php')); ?>;
+        window.aavniAdminParams.stock_nonce = <?php echo json_encode(wp_create_nonce('aavni_admin_quick_stock')); ?>;
+        window.aavniAdminParams.milestone_nonce = <?php echo json_encode(wp_create_nonce('aavni_quick_milestone_advance')); ?>;
+    </script>
+
     <style>
         /* Standalone Admin Application Reset & Architecture */
         html, body {
@@ -397,6 +404,10 @@ if ($can_access) {
             display: flex;
             min-height: 100vh;
             background: #FDFBF7;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            position: relative;
         }
 
         /* Fixed Left Sidebar */
@@ -577,23 +588,31 @@ if ($can_access) {
         /* Workspace Main Column */
         .aavni-app-main {
             margin-left: 270px;
+            width: calc(100% - 270px);
+            max-width: calc(100% - 270px);
+            min-width: 0;
             flex-grow: 1;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
+            overflow-x: hidden;
+            background: #FDFBF7;
         }
 
         /* Top Bar */
         .aavni-app-topbar {
             height: 68px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
             background: rgba(253, 251, 247, 0.95);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid #E8E3DC;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 36px;
+            padding: 0 32px;
             position: sticky;
             top: 0;
             z-index: 500;
@@ -655,8 +674,12 @@ if ($can_access) {
 
         /* Workspace Content Body */
         .aavni-app-content {
-            padding: 24px 36px 60px;
+            padding: 24px 32px 60px;
             flex-grow: 1;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
         }
 
         /* Clean up redundant horizontal nav pills in standalone layout */
@@ -666,6 +689,43 @@ if ($can_access) {
 
         .aavni-app-content .aavni-admin-wrap {
             margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Mobile & Tablet Responsiveness */
+        @media (max-width: 1024px) {
+            .aavni-app-sidebar {
+                width: 230px;
+            }
+            .aavni-app-main {
+                margin-left: 230px;
+                width: calc(100% - 230px);
+                max-width: calc(100% - 230px);
+            }
+            .aavni-app-topbar,
+            .aavni-app-content {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .aavni-app-sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            .aavni-app-layout {
+                flex-direction: column;
+            }
+            .aavni-app-main {
+                margin-left: 0;
+                width: 100%;
+                max-width: 100%;
+            }
         }
     </style>
 </head>

@@ -49,7 +49,7 @@ function aavni_enqueue_assets() {
     ));
 
     // Admin Portal Assets
-    if (is_page('admin-portal') || is_page_template('page-admin-portal.php')) {
+    if (is_page('admin-portal') || is_page_template('page-admin-portal.php') || (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], 'admin-portal') !== false)) {
         wp_enqueue_media();
         wp_enqueue_style(
             'aavni-admin-css',
@@ -65,8 +65,9 @@ function aavni_enqueue_assets() {
             true
         );
         wp_localize_script('aavni-admin-js', 'aavniAdminParams', array(
-            'ajax_url'    => admin_url('admin-ajax.php'),
-            'stock_nonce' => wp_create_nonce('aavni_admin_quick_stock'),
+            'ajax_url'        => admin_url('admin-ajax.php'),
+            'stock_nonce'     => wp_create_nonce('aavni_admin_quick_stock'),
+            'milestone_nonce' => wp_create_nonce('aavni_quick_milestone_advance'),
         ));
     }
 }

@@ -39,7 +39,9 @@ $nightwear_img = $upload_dir['baseurl'] . '/aavni/nightwear-1.jpg';
                     $overlay_style = '';
                     if (isset($slide['overlay_opacity']) && $slide['overlay_opacity'] !== '') {
                         $op = floatval($slide['overlay_opacity']) / 100;
-                        $overlay_style = 'background: rgba(0, 0, 0, ' . esc_attr($op) . ');';
+                        $op_left = min(0.88, max(0.55, $op * 1.6));
+                        $op_mid  = min(0.60, max(0.25, $op * 1.1));
+                        $overlay_style = 'background: linear-gradient(90deg, rgba(27, 24, 22, ' . esc_attr($op_left) . ') 0%, rgba(27, 24, 22, ' . esc_attr($op_mid) . ') 48%, rgba(27, 24, 22, 0.08) 82%, rgba(27, 24, 22, 0) 100%);';
                     }
                 ?>
                     <div class="aavni-hero-slide <?php echo $idx === 0 ? 'active' : ''; ?>" data-slide-index="<?php echo esc_attr($idx); ?>">

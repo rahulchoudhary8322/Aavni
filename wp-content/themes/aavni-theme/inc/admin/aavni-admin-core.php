@@ -44,6 +44,7 @@ class AAVNI_Admin_Core {
         add_action('wp_ajax_aavni_admin_upload_image', [__CLASS__, 'ajax_upload_image']);
         add_action('wp_ajax_nopriv_aavni_admin_upload_image', [__CLASS__, 'ajax_upload_image']);
         add_action('wp_ajax_aavni_quick_milestone_advance', ['AAVNI_Admin_Orders', 'ajax_quick_milestone_advance']);
+        add_action('wp_ajax_nopriv_aavni_quick_milestone_advance', ['AAVNI_Admin_Orders', 'ajax_quick_milestone_advance']);
         add_action('wp_ajax_aavni_retry_owner_notification', ['AAVNI_New_Order_Notification', 'ajax_retry_notification']);
         add_action('wp_ajax_aavni_admin_add_category', ['AAVNI_Admin_Products', 'ajax_add_category']);
         add_action('wp_ajax_aavni_admin_generate_sku', ['AAVNI_Admin_Products', 'ajax_generate_sku']);
@@ -434,7 +435,7 @@ class AAVNI_Admin_Core {
 
         if (wp_doing_ajax()) {
             $action = isset($_REQUEST['action']) ? sanitize_key($_REQUEST['action']) : '';
-            if (strpos($action, 'aavni_admin') === 0) {
+            if (strpos($action, 'aavni_') === 0) {
                 return true;
             }
             if (in_array($action, ['query-attachments', 'upload-attachment', 'media-create-image-subsizes'], true)) {

@@ -130,6 +130,14 @@ class AAVNI_Admin_Orders {
      * AJAX: Quick one-click milestone stage advance/retreat
      */
     public static function ajax_quick_milestone_advance() {
+        // Synchronize admin authentication via portal session if needed
+        if (!is_user_logged_in() || (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce'))) {
+            $portal_uid = AAVNI_Admin_Core::get_portal_session_user_id();
+            if ($portal_uid > 0) {
+                wp_set_current_user($portal_uid);
+            }
+        }
+
         check_ajax_referer('aavni_quick_milestone_advance', 'nonce');
 
         if (!current_user_can('edit_shop_orders') && !current_user_can('manage_woocommerce')) {
@@ -313,7 +321,7 @@ class AAVNI_Admin_Orders {
                     <input type="search" name="search" value="<?php echo esc_attr($search_query); ?>" placeholder="Search Order # or Customer..." style="width:210px;" />
 
                     <!-- Status Filter -->
-                    <select name="status">
+                    <select name="status" style="width:auto; min-width:160px; max-width:210px;">
                         <option value="all"><?php esc_html_e('All Order Statuses', 'aavni'); ?></option>
                         <option value="pending" <?php selected($status_filter, 'pending'); ?>>Pending Payment</option>
                         <option value="processing" <?php selected($status_filter, 'processing'); ?>>Processing</option>
@@ -324,7 +332,7 @@ class AAVNI_Admin_Orders {
                     </select>
 
                     <!-- Milestone Filter -->
-                    <select name="milestone">
+                    <select name="milestone" style="width:auto; min-width:185px; max-width:240px;">
                         <option value="all"><?php esc_html_e('All Shipment Milestones', 'aavni'); ?></option>
                         <?php foreach ($milestones as $key => $m) : ?>
                             <option value="<?php echo esc_attr($key); ?>" <?php selected($milestone_filter, $key); ?>>
@@ -335,7 +343,7 @@ class AAVNI_Admin_Orders {
                     </select>
 
                     <!-- Payment Method Filter -->
-                    <select name="payment">
+                    <select name="payment" style="width:auto; min-width:170px; max-width:220px;">
                         <option value="all"><?php esc_html_e('All Payment Methods', 'aavni'); ?></option>
                         <option value="cod" <?php selected($payment_filter, 'cod'); ?>>Cash on Delivery (COD)</option>
                         <option value="razorpay" <?php selected($payment_filter, 'razorpay'); ?>>Razorpay Online</option>

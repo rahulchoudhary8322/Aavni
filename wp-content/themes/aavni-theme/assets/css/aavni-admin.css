@@ -32,6 +32,10 @@
     margin: 20px 20px 40px 2px;
     font-family: var(--aavni-font-body);
     color: var(--aavni-admin-dark);
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .aavni-admin-wrap * {
@@ -257,6 +261,10 @@
     box-shadow: var(--aavni-admin-shadow);
     margin-bottom: 28px;
     overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .aavni-card-header {
@@ -301,6 +309,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .aavni-filter-group {
@@ -308,6 +319,15 @@
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    flex: 1 1 auto;
+}
+
+.aavni-filter-group select,
+.aavni-filter-bar select {
+    width: auto !important;
+    min-width: 155px;
+    max-width: 220px;
+    flex: 0 1 auto;
 }
 
 .aavni-form-control,
@@ -404,11 +424,41 @@
 
 /* Data Tables */
 .aavni-table-wrap {
-    overflow-x: auto;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    display: block;
+    box-sizing: border-box;
+    position: relative;
+    padding-bottom: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--aavni-admin-gold) #F4EFEB;
+}
+
+/* Custom styled modern horizontal scrollbar */
+.aavni-table-wrap::-webkit-scrollbar {
+    height: 10px;
+}
+
+.aavni-table-wrap::-webkit-scrollbar-track {
+    background: #F4EFEB;
+    border-radius: 6px;
+}
+
+.aavni-table-wrap::-webkit-scrollbar-thumb {
+    background: #C5A880;
+    border-radius: 6px;
+    border: 2px solid #F4EFEB;
+}
+
+.aavni-table-wrap::-webkit-scrollbar-thumb:hover {
+    background: #A85A48;
 }
 
 .aavni-admin-table {
     width: 100%;
+    min-width: 1350px !important;
     border-collapse: collapse;
     font-size: 13.5px;
     text-align: left;
